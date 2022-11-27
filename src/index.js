@@ -1,8 +1,10 @@
 'use strict';
 
 const React = require('react');
-const ReactDOM = require('react-dom');
+import { createRoot } from 'react-dom/client';
 
 const { App } = require('./App');
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(<App tab="home" />);
