@@ -4,7 +4,7 @@ const React = require('react');
 import Collapsible from 'react-collapsible'
 
 function StatusSection(props) {
-  const isOpen = props.open;
+  const isOpen = props.open || false;
   const content = (
     <ul>
     {props.pkgs.map(function(pkg) {
@@ -32,10 +32,7 @@ function StatusSection(props) {
   const label = `${props.label} (${props.pkgs.length})`;
   return (
     <div className={ props.label }>
-    { isOpen
-      ? <Collapsible trigger={label} lazyRender open>{ content }</Collapsible>
-      : <Collapsible trigger={label} lazyRender>{ content }</Collapsible>
-    }
+      <Collapsible trigger={label} lazyRender open={isOpen}>{ content }</Collapsible>
     </div>
   );
 }
