@@ -52,7 +52,7 @@ class App extends React.Component {
     }).then((data) => {
       this.setState({dashboard: data});
     }).catch((error) => {
-      console.log(error);
+      console.error(error);
       this.setState({fetchFailed: true});
     });
   }
@@ -87,7 +87,7 @@ class App extends React.Component {
 
       this.setState({suites: suiteList});
     }).catch((error) => {
-      console.log(error);
+      console.error(error);
       this.setState({fetchFailed: true});
     });
   }
