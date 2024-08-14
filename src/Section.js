@@ -12,20 +12,20 @@ function StatusSection(props) {
       let links='';
       if (pkg.build_id) {
         const build_log_url=`/api/v0/builds/${pkg.build_id}/log`;
-        const build_log_link=<a href={build_log_url} target="_blank" title="build log"><img src="icons/note-16.svg" className="icon" /></a>;
+        const build_log_link=<a href={build_log_url} target="_blank noreferrer" title="build log"><img src="icons/note-16.svg" className="icon" /></a>;
         let diffoscope_link='';
         let attestation_link='';
         if (pkg.has_diffoscope) {
           const diffoscope_url=`/api/v0/builds/${pkg.build_id}/diffoscope`;
-          diffoscope_link=<a href={diffoscope_url} target="_blank" title="diffoscope"><img src="icons/search-16.svg" className="icon" /></a>;
+          diffoscope_link=<a href={diffoscope_url} target="_blank noreferrer" title="diffoscope"><img src="icons/search-16.svg" className="icon" /></a>;
         }
         if (pkg.has_attestation) {
           const attestation_url=`/api/v0/builds/${pkg.build_id}/attestation`;
-          attestation_link=<a href={attestation_url} target="_blank" title="attestation"><img src="icons/in-toto.svg" className="icon" /></a>;
+          attestation_link=<a href={attestation_url} target="_blank noreferrer" title="attestation"><img src="icons/in-toto.svg" className="icon" /></a>;
         }
         links=<span className="noselect"> {build_log_link} {diffoscope_link} {attestation_link}</span>;
       }
-      return <li key={pkg.name}><p className="subtitle is-6"><a href={url} target="_blank" >{pkg.name} {pkg.version}</a>{links}</p></li>
+      return <li key={pkg.name}><p className="subtitle is-6"><a href={url} target="_blank noreferrer" >{pkg.name} {pkg.version}</a>{links}</p></li>
     })}
     </ul>
   );
