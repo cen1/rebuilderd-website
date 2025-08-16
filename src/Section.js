@@ -36,7 +36,7 @@ function StatusSection(props) {
   const label = `${props.label} (${props.pkgs.length})`;
   return (
     <div className={ props.label }>
-      <Collapsible trigger={label} lazyRender open={isOpen}>{ content }</Collapsible>
+      <Collapsible trigger={label} open={isOpen}>{ content }</Collapsible>
     </div>
   );
 }
