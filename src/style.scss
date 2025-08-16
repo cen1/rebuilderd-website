@@ -89,20 +89,18 @@ $box-padding: 5px 10px 10px 10px;
 	}
 }
 
-@import "../node_modules/bulma/sass/utilities/_all.sass";
-@import "../node_modules/bulma/sass/helpers/_all.sass";
-@import "../node_modules/bulma/sass/base/_all.sass";
-@import "../node_modules/bulma/sass/elements/container.sass";
-@import "../node_modules/bulma/sass/elements/box.sass";
-@import "../node_modules/bulma/sass/elements/title.sass";
-@import "../node_modules/bulma/sass/layout/footer.sass";
-@import "../node_modules/bulma/sass/layout/hero.sass";
-@import "../node_modules/bulma/sass/layout/section.sass";
-@import "../node_modules/bulma/sass/grid/tiles.sass";
+@import "../node_modules/bulma/sass/utilities/_index.scss";
+@import "../node_modules/bulma/sass/utilities/mixins.scss";
+@import "../node_modules/bulma/sass/helpers/_index.scss";
+@import "../node_modules/bulma/sass/base/_index.scss";
+@import "../node_modules/bulma/sass/elements/box.scss";
+@import "../node_modules/bulma/sass/elements/title.scss";
+@import "../node_modules/bulma/sass/layout/container.scss";
+@import "../node_modules/bulma/sass/layout/footer.scss";
+@import "../node_modules/bulma/sass/layout/hero.scss";
+@import "../node_modules/bulma/sass/layout/section.scss";
+@import "../node_modules/bulma/sass/grid/columns.scss";
 
-.has-background-info {
-	background-color: #e4eeff !important;
-}
 
 .good {
 	color: $color-green;

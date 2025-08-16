@@ -40,27 +40,29 @@ app.use((req, res, next) => {
 
 // Proxy API requests to rebuilderd backend
 const apiProxy = createProxyMiddleware({
-  target: apiBaseUrl,
+  target: `${apiBaseUrl}/api`,
   changeOrigin: true,
   pathRewrite: {
-    '^/api': '/api', // Keep the /api prefix
+    '^/api': '', // Remove the /api prefix since it's in target
   },
-  onProxyReq: (proxyReq, req) => {
-    console.log(`🔄 ${req.method} ${req.originalUrl} → ${apiBaseUrl}${req.originalUrl}`);
-    if (authToken) {
-      const existingCookie = proxyReq.getHeader('Cookie') || '';
-      const authCookie = `auth=${authToken}`;
-      const newCookie = existingCookie ? `${existingCookie}; ${authCookie}` : authCookie;
-      proxyReq.setHeader('Cookie', newCookie);
-    }
-  },
-  onProxyRes: (proxyRes, req) => {
-    console.log(`✅ ${req.method} ${req.originalUrl} → ${proxyRes.statusCode}`);
-  },
-  onError: (err, req, res) => {
-    console.error(`❌ API proxy error: ${err.message}`);
-    if (!res.headersSent) {
-      res.status(502).json({ error: 'API proxy error', message: err.message });
+  on: {
+    proxyReq: (proxyReq, req) => {
+      console.log(`🔄 ${req.method} ${req.originalUrl} → ${apiBaseUrl}/api${req.url}`);
+      if (authToken) {
+        const existingCookie = proxyReq.getHeader('Cookie') || '';
+        const authCookie = `auth=${authToken}`;
+        const newCookie = existingCookie ? `${existingCookie}; ${authCookie}` : authCookie;
+        proxyReq.setHeader('Cookie', newCookie);
+      }
+    },
+    proxyRes: (proxyRes, req) => {
+      console.log(`✅ ${req.method} ${req.originalUrl} → ${proxyRes.statusCode}`);
+    },
+    error: (err, req, res) => {
+      console.error(`❌ API proxy error: ${err.message}`);
+      if (!res.headersSent) {
+        res.status(502).json({ error: 'API proxy error', message: err.message });
+      }
     }
   }
 });
