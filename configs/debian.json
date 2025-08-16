@@ -3,10 +3,11 @@
   "branding": {
     "name": "Debian",
     "title": "Debian Reproducible Status",
-    "favicon": "debian_icon.ico"
+    "favicon": "assets/debian/debian_icon.ico",
+    "poweredBy": "assets/debian/powered_by_debian.png"
   },
   "styling": {
-    "logo": "Debian-OpenLogo-Horizontal.svg",
+    "logo": "assets/debian/Debian-OpenLogo-Horizontal.svg",
     "colors": {
       "navbarBorder": "#c70036",
       "navbarBackground": "#333"

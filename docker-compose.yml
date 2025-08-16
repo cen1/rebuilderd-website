@@ -1,0 +1,11 @@
+services:
+  rebuilderd-website:
+    build:
+      context: .
+      args:
+        DISTRO: debian
+        REBUILDERD_URL: http://localhost:8484
+        REBUILDERD_AUTH_TOKEN: my-rebuilderd-token
+    ports:
+      - "8080:80"
+    restart: unless-stopped

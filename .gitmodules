@@ -1,3 +1,0 @@
-[submodule ".external/archlinux-common-style"]
-	path = .external/archlinux-common-style
-	url = https://gitlab.archlinux.org/archlinux/archlinux-common-style

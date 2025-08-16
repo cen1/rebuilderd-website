@@ -18,7 +18,20 @@ const ConfigurableNavbar = () => {
 	}, []);
 
 	if (loading) {
-		return <div id="archnavbar">Loading...</div>;
+		return (
+			<div id="archnavbar">
+				<div id="logo">
+					<a href="#" title="Loading...">
+						Loading...
+					</a>
+				</div>
+				<div id="archnavbarmenu">
+					<ul id="archnavbarlist">
+						<li><a href="#">Loading...</a></li>
+					</ul>
+				</div>
+			</div>
+		);
 	}
 
 	if (!config) {

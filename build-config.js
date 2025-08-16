@@ -35,6 +35,12 @@ html = html.replace(/\{\{TITLE\}\}/g, config.branding.title);
 html = html.replace(/\{\{FAVICON\}\}/g, config.branding.favicon);
 html = html.replace(/\{\{BRANDING_NAME\}\}/g, config.branding.name);
 
+// Add powered by logo if configured
+const poweredByHtml = config.branding.poweredBy 
+  ? `<p><img src="${config.branding.poweredBy}" alt="Powered by ${config.branding.name}" style="max-height: 40px; margin-top: 10px;"></p>`
+  : '';
+html = html.replace(/\{\{POWERED_BY\}\}/g, poweredByHtml);
+
 fs.writeFileSync(htmlOutputPath, html);
 console.log(`✅ HTML generated from template with ${config.branding.name} branding`);
 

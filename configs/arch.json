@@ -3,10 +3,10 @@
   "branding": {
     "name": "Arch Linux",
     "title": "Arch Linux Reproducible Status",
-    "favicon": "favicon.ico"
+    "favicon": "assets/arch/favicon.ico"
   },
   "styling": {
-    "logo": "archlogo.8a05bc7f6cd1.svg",
+    "logo": "assets/arch/archlogo.8a05bc7f6cd1.svg",
     "colors": {
       "navbarBorder": "#08c",
       "navbarBackground": "#333"
