@@ -75,6 +75,7 @@ class Header extends React.Component {
         <div className="hero-body">
           <div id="status">
             <h1 className="title">Reproducible status</h1>
+            <br/>
             {configLoading ? (
               <p>Loading...</p>
             ) : config && config.content && config.content.welcomeText ? (

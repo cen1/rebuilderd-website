@@ -8,7 +8,6 @@
   "scripts": {
     "config": "node build-config.js",
     "prebuild": "npm run config",
-    "start": "npm run build && node dev-server.js",
     "dev": "npm run config && concurrently \"npm run sass:watch\" \"npm run build:watch\" \"node dev-server.js\"",
     "build": "browserify -t babelify src/index.js > public/bundle.js && npm run sass",
     "build:watch": "watchify -t babelify src/index.js -o public/bundle.js",

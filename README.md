@@ -15,8 +15,8 @@ Copy `.env.example` to `.env` and point it to your rebuilderd instance.
 
 ```
 yarn install
-npm build:debian
-npm start
+npm run build:debian
+npm run dev:debian
 ```
 
 Open http://localhost:3000
@@ -125,8 +125,8 @@ Examples:
 
 ```bash
 # Development server
-npm build:mydistro
-npm run dev:mydistro
+npm run build:mydistro
+npm start
 ```
 ## Deployment
 

@@ -1,5 +1,20 @@
 @charset "utf-8";
 
+// Import modules first
+@use "distro-config.scss";
+@use "../node_modules/bulma/sass/utilities" as *;
+@use "../node_modules/bulma/sass/utilities/mixins" as *;
+@use "../node_modules/bulma/sass/helpers" as *;
+@use "../node_modules/bulma/sass/base" as *;
+@use "../node_modules/bulma/sass/elements/box" as *;
+@use "../node_modules/bulma/sass/elements/title" as *;
+@use "../node_modules/bulma/sass/layout/container" as *;
+@use "../node_modules/bulma/sass/layout/footer" as *;
+@use "../node_modules/bulma/sass/layout/hero" as *;
+@use "../node_modules/bulma/sass/layout/section" as *;
+@use "../node_modules/bulma/sass/grid/columns" as *;
+@use "sass:color";
+
 // Generic colors (no longer Arch-specific)
 $color-green: #5cb85c;
 $color-red: #d9534f;
@@ -10,14 +25,17 @@ $link: $color-blue;
 $hero-body-padding: 1.5rem 2rem;
 $box-padding: 5px 10px 10px 10px;
 
-@import "distro-config.scss";
+// Body font family
+body {
+	font-family: BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
 
 // Navbar styles (previously from archlinux-common-style)
 #archnavbar {
 	background-color: #333;
 	border-bottom: 4px solid #0088cc;
-	height: 50px;
-	padding: 0;
+	min-height: 40px !important;
+	padding: 10px 15px !important;
 	position: relative;
 	display: flex;
 	align-items: center;
@@ -55,9 +73,9 @@ $box-padding: 5px 10px 10px 10px;
 				a {
 					color: #999;
 					display: block;
-					font-size: 13px;
+					font-size: 14px;
 					font-weight: bold;
-					padding: 18px 15px;
+					padding: 22px 15px;
 					text-decoration: none;
 					
 					&:hover {
@@ -72,14 +90,18 @@ $box-padding: 5px 10px 10px 10px;
 // Hero section styling  
 .hero {
 	&.is-primary {
-		background-color: #0088cc;
+		background-color: #f6f9fc;
+		color: rgba(0,0,0,0.7);
 		
 		.hero-body {
 			background-color: #fff;
 			color: rgba(0,0,0,0.7);
 			
 			.title {
-				color: rgba(0,0,0,0.7);
+				color: #363636;
+				font-size: 2rem;
+				font-weight: 600;
+				line-height: 1.125;
 			}
 			
 			a {
@@ -89,18 +111,6 @@ $box-padding: 5px 10px 10px 10px;
 		}
 	}
 }
-
-@import "../node_modules/bulma/sass/utilities/_index.scss";
-@import "../node_modules/bulma/sass/utilities/mixins.scss";
-@import "../node_modules/bulma/sass/helpers/_index.scss";
-@import "../node_modules/bulma/sass/base/_index.scss";
-@import "../node_modules/bulma/sass/elements/box.scss";
-@import "../node_modules/bulma/sass/elements/title.scss";
-@import "../node_modules/bulma/sass/layout/container.scss";
-@import "../node_modules/bulma/sass/layout/footer.scss";
-@import "../node_modules/bulma/sass/layout/hero.scss";
-@import "../node_modules/bulma/sass/layout/section.scss";
-@import "../node_modules/bulma/sass/grid/columns.scss";
 
 .good {
 	color: $color-green;
@@ -127,7 +137,8 @@ $box-padding: 5px 10px 10px 10px;
 }
 
 .has-background-info {
-	background-color: #e4eeff;
+	background-color: #e4eeff !important;
+	border-radius: 0.375rem;
 }
 
 .section {
@@ -210,4 +221,14 @@ $box-padding: 5px 10px 10px 10px;
 	-moz-user-select: none; /* Old versions of Firefox */
 	-ms-user-select: none; /* Internet Explorer/Edge */
 	user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}
+
+// Footer link styling
+.footer a {
+	color: $color-blue;
+	text-decoration: underline;
+	
+	&:hover {
+		color: color.adjust($color-blue, $lightness: -15%);
+	}
 }
