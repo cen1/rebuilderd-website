@@ -8,7 +8,11 @@ function StatusSection(props) {
   const content = (
     <ul>
     {props.pkgs.map(function(pkg) {
-      const url=`https://www.archlinux.org/packages/${pkg.suite}/${pkg.architecture}/${pkg.name}`;
+      const urlTemplate = props.config?.content?.packageUrlTemplate || 'https://www.archlinux.org/packages/{suite}/{architecture}/{name}';
+      const url = urlTemplate
+        .replace('{suite}', pkg.suite)
+        .replace('{architecture}', pkg.architecture)
+        .replace('{name}', pkg.name);
       let links='';
       if (pkg.build_id) {
         const build_log_url=`/api/v0/builds/${pkg.build_id}/log`;
@@ -39,7 +43,7 @@ function StatusSection(props) {
 
 class Section extends React.Component {
   render() {
-    const { suite } = this.props;
+    const { suite, config } = this.props;
     const good = suite.pkgs.filter(pkg => pkg.status == "GOOD");
     const bad = suite.pkgs.filter(pkg => pkg.status == "BAD");
     const unknown = suite.pkgs.filter(pkg => pkg.status == "UNKWN");
@@ -48,9 +52,9 @@ class Section extends React.Component {
       <section key={suite.name} className="section pt-4 pb-4" id={ suite.name }>
         <div className="tile box has-background-info">
           <Collapsible trigger={ name } open>
-            {good.length > 0 && <StatusSection label="good" pkgs={ good } />}
-            {bad.length > 0 && <StatusSection label="bad" pkgs={ bad } open />}
-            {unknown.length > 0 && <StatusSection label="unknown" pkgs={ unknown } open />}
+            {good.length > 0 && <StatusSection label="good" pkgs={ good } config={config} />}
+            {bad.length > 0 && <StatusSection label="bad" pkgs={ bad } config={config} open />}
+            {unknown.length > 0 && <StatusSection label="unknown" pkgs={ unknown } config={config} open />}
           </Collapsible>
         </div>
       </section>

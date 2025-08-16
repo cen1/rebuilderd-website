@@ -1,0 +1,79 @@
+{
+  "distro": "arch",
+  "branding": {
+    "name": "Arch Linux",
+    "title": "Arch Linux Reproducible Status",
+    "favicon": "favicon.ico"
+  },
+  "styling": {
+    "logo": "archlogo.8a05bc7f6cd1.svg",
+    "colors": {
+      "navbarBorder": "#08c",
+      "navbarBackground": "#333"
+    }
+  },
+  "content": {
+    "welcomeText": {
+      "paragraph1": "Welcome to the Arch Linux <a href=\"https://github.com/kpcyrd/rebuilderd\">rebuilderd</a> instance run by <...>, this page shows the results of verification builds of Arch Linux packages in the repositories in an effort to be fully reproducible.",
+      "paragraph2": "For more information read the <a href=\"https://reproducible-builds.org/\">Reproducible Builds website</a> or join the <a href=\"ircs://irc.libera.chat/archlinux-reproducible\">#archlinux-reproducible</a> IRC channel on <a href=\"https://libera.chat/\">Libera Chat</a>."
+    },
+    "packageUrlTemplate": "https://www.archlinux.org/packages/{suite}/{architecture}/{name}"
+  },
+  "navbar": {
+    "logo": {
+      "text": "Arch Linux",
+      "url": "https://archlinux.org",
+      "title": "Return to the main page"
+    },
+    "menuItems": [
+      {
+        "id": "anb-home",
+        "text": "Home",
+        "url": "https://archlinux.org",
+        "title": "Arch news, packages, projects and more"
+      },
+      {
+        "id": "anb-packages",
+        "text": "Packages",
+        "url": "https://archlinux.org/packages/",
+        "title": "Arch Package Database"
+      },
+      {
+        "id": "anb-forums",
+        "text": "Forums",
+        "url": "https://bbs.archlinux.org/",
+        "title": "Community forums"
+      },
+      {
+        "id": "anb-wiki",
+        "text": "Wiki",
+        "url": "https://wiki.archlinux.org/",
+        "title": "Community documentation"
+      },
+      {
+        "id": "anb-gitlab",
+        "text": "GitLab",
+        "url": "https://gitlab.archlinux.org/archlinux",
+        "title": "GitLab"
+      },
+      {
+        "id": "anb-security",
+        "text": "Security",
+        "url": "https://security.archlinux.org/",
+        "title": "Arch Linux Security Tracker"
+      },
+      {
+        "id": "anb-aur",
+        "text": "AUR",
+        "url": "https://aur.archlinux.org/",
+        "title": "Arch Linux User Repository"
+      },
+      {
+        "id": "anb-download",
+        "text": "Download",
+        "url": "https://archlinux.org/download/",
+        "title": "Get Arch Linux"
+      }
+    ]
+  }
+}

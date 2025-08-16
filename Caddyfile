@@ -1,9 +1,0 @@
-http://localhost:8881
-
-log
-
-encode gzip
-
-reverse_proxy localhost:9966
-reverse_proxy /api/* https://reproducible.archlinux.org
-reverse_proxy /livereload localhost:9966

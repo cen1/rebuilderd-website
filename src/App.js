@@ -13,15 +13,16 @@ class App extends React.Component {
       fetchFailed: false,
       suites: [],
       dashboard: null,
+      config: null,
     };
   }
 
   render() {
-    const { fetchFailed, dashboard, suites } = this.state;
+    const { fetchFailed, dashboard, suites, config } = this.state;
     return (
       <React.Fragment>
         <Header fetchFailed={fetchFailed} dashboard={dashboard}/>
-        <Body fetchFailed={fetchFailed} suites={suites}/>
+        <Body fetchFailed={fetchFailed} suites={suites} config={config}/>
       </React.Fragment>
     );
   }
@@ -92,7 +93,19 @@ class App extends React.Component {
     });
   }
 
+  loadConfig() {
+    fetch('/config.json')
+      .then(response => response.json())
+      .then(data => {
+        this.setState({ config: data });
+      })
+      .catch(error => {
+        console.error('Failed to load config:', error);
+      });
+  }
+
   componentDidMount() {
+    this.loadConfig()
     this.loadDashboard()
     this.loadPkgs()
   }

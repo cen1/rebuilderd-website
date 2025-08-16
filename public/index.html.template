@@ -3,10 +3,10 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Debian Reproducible Status</title>
+		<title>{{TITLE}}</title>
 		<script src="bundle.js" defer></script>
 		<link rel="stylesheet" href="bundle.css"/>
-		<link rel="shortcut icon" href="debian_icon.ico"/>
+		<link rel="shortcut icon" href="{{FAVICON}}"/>
 	</head>
 	<body>
 		<div id="root"></div>
@@ -18,7 +18,7 @@
 				<br>
 			</noscript>
 			<p>
-				<strong>Debian Reproducible Status</strong> by <a href="https://github.com/jelly">Jelle van der Waa</a>. The source code is licensed
+				<strong>{{BRANDING_NAME}} Reproducible Status</strong> by <a href="https://github.com/jelly">Jelle van der Waa</a>. The source code is licensed
 				<a href="http://opensource.org/licenses/mit-license.php">MIT</a> and available <a href="https://gitlab.archlinux.org/archlinux/rebuilderd-website">here</a>.
 			</p>
 		</div>

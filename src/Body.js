@@ -7,7 +7,7 @@ const { Section } = require('./Section');
 
 class Body extends React.Component {
   render() {
-    const { fetchFailed, suites } = this.props;
+    const { fetchFailed, suites, config } = this.props;
 
     return (
       <React.Fragment>
@@ -26,7 +26,7 @@ class Body extends React.Component {
       </section>
       }
       {suites.map(suite =>
-        <Section key={suite.name} suite={suite}/>
+        <Section key={suite.name} suite={suite} config={config}/>
       )}
       </React.Fragment>
     )

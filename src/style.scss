@@ -1,9 +1,93 @@
 @charset "utf-8";
 
+// Generic colors (no longer Arch-specific)
+$color-green: #5cb85c;
+$color-red: #d9534f;
+$color-orange: #f0ad4e;
+$color-blue: #0088cc;
+$link: $color-blue;
+
 $hero-body-padding: 1.5rem 2rem;
 $box-padding: 5px 10px 10px 10px;
 
-@import "../.external/archlinux-common-style/sass/archlinux.scss";
+@import "distro-config.scss";
+
+// Navbar styles (previously from archlinux-common-style)
+#archnavbar {
+	background-color: #333;
+	border-bottom: 4px solid #0088cc;
+	height: 50px;
+	padding: 0;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+
+	#logo {
+		background-repeat: no-repeat;
+		background-position: left center;
+		background-size: contain;
+		height: 40px;
+		width: 150px;
+		margin: 0 20px;
+		
+		a {
+			display: block;
+			height: 100%;
+			text-indent: -9999px;
+			overflow: hidden;
+		}
+	}
+
+	#archnavbarmenu {
+		margin-right: 20px;
+		
+		#archnavbarlist {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			
+			li {
+				margin: 0;
+				padding: 0;
+				
+				a {
+					color: #999;
+					display: block;
+					font-size: 13px;
+					padding: 18px 15px;
+					text-decoration: none;
+					
+					&:hover {
+						color: #fff;
+					}
+				}
+			}
+		}
+	}
+}
+
+// Hero section styling  
+.hero {
+	&.is-primary {
+		background-color: #0088cc;
+		
+		.hero-body {
+			background-color: #fff;
+			color: rgba(0,0,0,0.7);
+			
+			.title {
+				color: rgba(0,0,0,0.7);
+			}
+			
+			a {
+				color: #0088cc;
+				text-decoration: underline;
+			}
+		}
+	}
+}
 
 @import "../node_modules/bulma/sass/utilities/_all.sass";
 @import "../node_modules/bulma/sass/helpers/_all.sass";
@@ -21,26 +105,26 @@ $box-padding: 5px 10px 10px 10px;
 }
 
 .good {
-	color: $archlinux-color-green;
+	color: $color-green;
 
 	& .subtitle:before, & .Collapsible__trigger {
-		color: $archlinux-color-green;
+		color: $color-green;
 	}
 }
 
 .bad {
-	color: $archlinux-color-red;
+	color: $color-red;
 
 	& .subtitle:before, & .Collapsible__trigger {
-		color: $archlinux-color-red;
+		color: $color-red;
 	}
 }
 
 .unknown {
-	color: $archlinux-color-orange;
+	color: $color-orange;
 
 	& .subtitle:before, & .Collapsible__trigger {
-		color: $archlinux-color-orange;
+		color: $color-orange;
 	}
 }
 

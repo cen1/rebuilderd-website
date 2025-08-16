@@ -1,44 +1,27 @@
-# Arch Linux Rebuilderd Status
+# Rebuilderd Status Website
 
-A simple status display with the number of reproducible packages for Arch
-Linux. Uses rebuilderd's API to fetch the current status of reproducibility.
+This is a fork of [https://gitlab.archlinux.org/archlinux/rebuilderd-website](rebuilderd-website) but made more generic, so it can be used for any distro. Debian configuration is added.
+
+A simple status display with the number of reproducible packages. Uses rebuilderd's API to fetch the current status of reproducibility.
 
 ## Dependencies
 
+* node 20
 * yarn (for building/development)
-* caddy (for local development)
-* tmux (running watchers)
-* ruby-sass
-
-On Arch Linux
-
-```
-pacman -S caddy yarn tmux ruby-sass
-```
 
 ## Development
 
+Copy `.env.example` to `.env` and point it to your rebuilderd instance.
+
 ```
-make
-./scripts/startdevelop.sh
+yarn install
+npm start
 ```
 
-Open http://localhost:8881
+Open http://localhost:3000
+
+Calls to `/api` path are proxied to rebuilderd backend to avoid CORS issues.
 
 ## Deployment
 
-Creating a distributable tarball can be done with:
-
-```
-make dist
-```
-
-## Release
-
-To release a new version:
-
-```
-git tag -as v$version
-```
-
-Update the rebuilderd-website package in Arch Linux.
+Static build in an nginx Docker container is used.

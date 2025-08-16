@@ -2,5 +2,15 @@
 /dist
 /public/bundle*
 
+# Generated distro-specific files (should not be committed)
+/public/index.html
+/public/config.json
+/public/navbar-config.json
+/src/distro-config.scss
+
+# Remove submodule since we're now generic
+/.external
+
 .yarninstall
 .sass-cache
+.env
