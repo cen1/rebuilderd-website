@@ -126,7 +126,7 @@ Examples:
 ```bash
 # Development server
 npm run build:mydistro
-npm start
+npm run dev:debian
 ```
 ## Deployment
 
