@@ -1,0 +1,8 @@
+build.sh
+node_modules/
+.env
+dev-server.js
+docker-compose.yml
+LICENSE
+README.md
+.git/
