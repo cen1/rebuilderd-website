@@ -10,7 +10,7 @@
     "prebuild": "npm run config",
     "dev": "npm run config && concurrently \"npm run sass:watch\" \"npm run build:watch\" \"node dev-server.js\"",
     "build": "browserify -t babelify src/index.js > public/bundle.js && npm run sass",
-    "build:watch": "watchify -t babelify src/index.js -o public/bundle.js",
+    "build:watch": "watchify -v -t babelify src/index.js -o public/bundle.js",
     "sass": "sass src/style.scss:public/bundle.css",
     "sass:watch": "sass --watch src/style.scss:public/bundle.css",
     "build:prod": "npm run config && npm run build:js:prod && npm run sass:prod",

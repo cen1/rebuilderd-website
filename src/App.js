@@ -100,8 +100,6 @@ class App extends React.Component {
                 const dashboard = dashboards[key];
                 const metadata = releaseMetadata[key];
 
-                console.log(`Rendering box for ${key}:`, { distro, release, hasDashboard: !!dashboard, hasMetadata: !!metadata });
-
                 return (
                   <div key={key} className="column is-one-third">
                     <div className="box distro-card" style={{
@@ -313,7 +311,6 @@ class App extends React.Component {
         return response.json();
       })
       .then((distributions) => {
-        console.log('Available distributions:', distributions);
 
         // For each distribution, get its releases
         const releasePromises = distributions.map(distro =>
@@ -326,7 +323,6 @@ class App extends React.Component {
               return res.json();
             })
             .then(releases => {
-              console.log(`Releases for ${distro}:`, releases);
               // Handle null releases (e.g., rolling release distros like Arch Linux)
               return releases
                 .filter(release => release !== undefined)
@@ -343,7 +339,6 @@ class App extends React.Component {
 
         Promise.all(releasePromises).then(results => {
           const distroReleases = results.flat();
-          console.log('Distribution-Release combinations:', distroReleases);
 
           this.setState({ distroReleases }, () => {
             // Load dashboard and metadata for each distro-release combination
@@ -362,37 +357,27 @@ class App extends React.Component {
 
   async loadMetadataForRelease(distribution, release) {
     const key = `${distribution}-${release}`;
-    const releaseSegment = release ? encodeURIComponent(release) : '';
-    const componentsUrl = `/api/v1/meta/distributions/${encodeURIComponent(distribution)}/${releaseSegment}/components`;
-
-    console.log('loadMetadataForRelease - key:', key, 'URL:', componentsUrl);
 
     try {
-      const res = await fetch(componentsUrl);
-      const components = res.ok ? await res.json() : [];
+      let componentsUrl, architecturesUrl;
 
-      const metadata = {
-        components: components,
-        architectures: new Set()
-      };
+      if (release) {
+        // Distribution with releases (e.g., Debian)
+        componentsUrl = `/api/v1/meta/distributions/${encodeURIComponent(distribution)}/${encodeURIComponent(release)}/components`;
+        architecturesUrl = `/api/v1/meta/distributions/${encodeURIComponent(distribution)}/${encodeURIComponent(release)}/architectures`;
+      } else {
+        // Rolling distribution without releases (e.g., Arch Linux)
+        componentsUrl = `/api/v1/meta/distributions/${encodeURIComponent(distribution)}/components`;
+        architecturesUrl = `/api/v1/meta/distributions/${encodeURIComponent(distribution)}/architectures`;
+      }
 
-      await Promise.all(
-        components.map(async (component) => {
-          const archUrl = `/api/v1/meta/distributions/${encodeURIComponent(distribution)}/${releaseSegment}/components/${encodeURIComponent(component)}/architectures`;
-          console.log('Fetching architectures for component:', component, 'URL:', archUrl);
+      const [componentsRes, architecturesRes] = await Promise.all([
+        fetch(componentsUrl),
+        fetch(architecturesUrl)
+      ]);
 
-          try {
-            const archRes = await fetch(archUrl);
-            console.log('Architecture response for', component, 'ok:', archRes.ok, 'status:', archRes.status);
-
-            const archs = archRes.ok ? await archRes.json() : [];
-            console.log('Architectures for', component, ':', archs);
-            archs.forEach(arch => metadata.architectures.add(arch));
-          } catch (err) {
-            console.error('Error fetching architectures for', component, ':', err);
-          }
-        })
-      );
+      const components = componentsRes.ok ? await componentsRes.json() : [];
+      const architectures = architecturesRes.ok ? await architecturesRes.json() : [];
 
       // Wrap setState in a Promise to wait for it to finish
       await new Promise((resolve) => {
@@ -400,8 +385,8 @@ class App extends React.Component {
           releaseMetadata: {
             ...prevState.releaseMetadata,
             [key]: {
-              components: metadata.components,
-              architectures: Array.from(metadata.architectures)
+              components: components,
+              architectures: architectures
             }
           }
         }), resolve);  // Resolve the promise once setState is done
@@ -440,7 +425,6 @@ class App extends React.Component {
     fetch('/config.json')
       .then(response => response.json())
       .then(data => {
-        console.log('Loaded common config and distro configs:', Object.keys(data.distributions || {}));
         this.setState({
           commonConfig: data.common || {},
           distroConfigs: data.distributions || {}
@@ -457,8 +441,6 @@ class App extends React.Component {
     // Get the architectures and components for this release from metadata
     const key = `${selectedDistro}-${selectedRelease}`;
     const metadata = this.state.releaseMetadata[key];
-
-    console.log('loadPkgs - key:', key, 'metadata:', metadata);
 
     // Create empty suite structures for each component-architecture combination
     // Packages will be loaded on-demand by the Section component when filters are applied
@@ -481,7 +463,6 @@ class App extends React.Component {
     this.loadConfigs();
     if (this.state.showPackages) {
       const { selectedDistro, selectedRelease } = this.state;
-      console.log('Loading packages for:', selectedDistro, 'release:', selectedRelease, 'type:', typeof selectedRelease);
       // Load metadata first, then packages
       await this.loadMetadataForRelease(selectedDistro, selectedRelease);
       this.loadPkgs();
