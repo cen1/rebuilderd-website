@@ -1,70 +1,60 @@
 const fs = require('fs');
 const path = require('path');
 
-const distro = process.env.DISTRO || 'arch';
-const configPath = path.join(__dirname, 'configs', `${distro}.json`);
+const configsDir = path.join(__dirname, 'configs');
 const outputPath = path.join(__dirname, 'public', 'config.json');
-const navbarOutputPath = path.join(__dirname, 'public', 'navbar-config.json');
-const htmlTemplatePath = path.join(__dirname, 'public', 'index.html.template');
-const htmlOutputPath = path.join(__dirname, 'public', 'index.html');
 const scssOutputPath = path.join(__dirname, 'src', 'distro-config.scss');
 
-console.log(`🔧 Building for distro: ${distro}`);
+console.log(`🔧 Building universal multi-distribution config`);
 
-// Check if config exists
-if (!fs.existsSync(configPath)) {
-  console.error(`❌ Config file not found: ${configPath}`);
-  console.error(`Available configs: ${fs.readdirSync(path.join(__dirname, 'configs')).join(', ')}`);
-  process.exit(1);
+// Load common config
+const commonConfigPath = path.join(configsDir, 'common.json');
+let commonConfig = {};
+if (fs.existsSync(commonConfigPath)) {
+  commonConfig = JSON.parse(fs.readFileSync(commonConfigPath, 'utf8'));
+  console.log(`✅ Loaded common config`);
 }
 
-// Load the config
-const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+// Load all distribution configs (excluding common.json)
+const configFiles = fs.readdirSync(configsDir)
+  .filter(f => f.endsWith('.json') && f !== 'common.json');
+const distroConfigs = {};
 
-// Write the full config
-fs.writeFileSync(outputPath, JSON.stringify(config, null, 2));
-console.log(`✅ Config written to: ${outputPath}`);
+console.log(`📦 Found ${configFiles.length} distribution configs: ${configFiles.join(', ')}`);
 
-// Write navbar-specific config for backwards compatibility
-fs.writeFileSync(navbarOutputPath, JSON.stringify(config.navbar, null, 2));
-console.log(`✅ Navbar config written to: ${navbarOutputPath}`);
+for (const file of configFiles) {
+  const configPath = path.join(configsDir, file);
+  const distroName = path.basename(file, '.json');
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  distroConfigs[distroName] = config;
+  console.log(`  ✅ Loaded ${distroName}: ${config.branding?.name || distroName}`);
+}
 
-// Generate HTML from template with distro-specific branding
-let html = fs.readFileSync(htmlTemplatePath, 'utf8');
-html = html.replace(/\{\{TITLE\}\}/g, config.branding.title);
-html = html.replace(/\{\{FAVICON\}\}/g, config.branding.favicon);
-html = html.replace(/\{\{BRANDING_NAME\}\}/g, config.branding.name);
+// Combine common and distro configs
+const unifiedConfig = {
+  common: commonConfig,
+  distributions: distroConfigs
+};
 
-// Add powered by logo if configured
-const poweredByHtml = config.branding.poweredBy 
-  ? `<p><img src="${config.branding.poweredBy}" alt="Powered by ${config.branding.name}" style="max-height: 40px; margin-top: 10px;"></p>`
-  : '';
-html = html.replace(/\{\{POWERED_BY\}\}/g, poweredByHtml);
+// Write unified config
+fs.writeFileSync(outputPath, JSON.stringify(unifiedConfig, null, 2));
+console.log(`✅ Unified config written to: ${outputPath}`);
 
-fs.writeFileSync(htmlOutputPath, html);
-console.log(`✅ HTML generated from template with ${config.branding.name} branding`);
-
-// Generate distro-specific SCSS using config styling
-const styling = config.styling || {};
-const logoAsset = styling.logo || 'archlogo.8a05bc7f6cd1.svg';
-const colors = styling.colors || {};
-const borderColor = colors.navbarBorder || '#08c';
-const backgroundColor = colors.navbarBackground || '#333';
-
-const scssContent = `// Auto-generated distro configuration for ${config.branding.name}
+// Generate base SCSS (will be overridden dynamically per distribution)
+const scssContent = `// Auto-generated base configuration
+// Styling will be applied dynamically based on active distribution
 #archnavbar #logo {
-  background-image: url("${logoAsset}") !important;
   background-size: contain !important;
   background-position: left center !important;
 }
 
 #archnavbar {
-  background-color: ${backgroundColor} !important;
-  border-bottom-color: ${borderColor} !important;
+  background-color: #333 !important;
+  border-bottom-color: #08c !important;
 }
 `;
 
 fs.writeFileSync(scssOutputPath, scssContent);
-console.log(`✅ SCSS config written with ${logoAsset} logo`);
+console.log(`✅ Base SCSS config written`);
 
-console.log(`🚀 Build configuration complete for ${config.branding.name}!`);
+console.log(`🚀 Universal build configuration complete with ${Object.keys(distroConfigs).length} distributions!`);

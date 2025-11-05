@@ -1,0 +1,12 @@
+{
+  "title": "xpam.pl rebuilder",
+  "content": {
+    "welcomeText": {
+      "paragraph1": "Welcome to the <a href=\"https://github.com/kpcyrd/rebuilderd\">rebuilderd</a> instance run by <a href='https://github.com/cen1'>cen1</a>. This page shows the results of verification builds of packages in various distributions in an effort to be fully reproducible.",
+      "paragraph2": "For more information read the <a href=\"https://reproducible-builds.org/\">Reproducible Builds website</a>."
+    }
+  },
+  "footer": {
+    "text": "Source on <a href=\"https://github.com/cen1/rebuilderd-website\">GitHub</a>. License is <a href=\"http://opensource.org/licenses/mit-license.php\">MIT</a>."
+  }
+}

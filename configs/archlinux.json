@@ -1,5 +1,5 @@
 {
-  "distro": "arch",
+  "distro": "archlinux",
   "branding": {
     "name": "Arch Linux",
     "title": "Arch Linux Reproducible Status",
@@ -7,6 +7,7 @@
   },
   "styling": {
     "logo": "assets/arch/archlogo.svg",
+    "backgroundImage": "assets/arch/background_rolling.svg",
     "colors": {
       "navbarBorder": "#08c",
       "navbarBackground": "#333"
@@ -39,40 +40,10 @@
         "title": "Arch Package Database"
       },
       {
-        "id": "anb-forums",
-        "text": "Forums",
-        "url": "https://bbs.archlinux.org/",
-        "title": "Community forums"
-      },
-      {
-        "id": "anb-wiki",
-        "text": "Wiki",
-        "url": "https://wiki.archlinux.org/",
-        "title": "Community documentation"
-      },
-      {
         "id": "anb-gitlab",
         "text": "GitLab",
         "url": "https://gitlab.archlinux.org/archlinux",
         "title": "GitLab"
-      },
-      {
-        "id": "anb-security",
-        "text": "Security",
-        "url": "https://security.archlinux.org/",
-        "title": "Arch Linux Security Tracker"
-      },
-      {
-        "id": "anb-aur",
-        "text": "AUR",
-        "url": "https://aur.archlinux.org/",
-        "title": "Arch Linux User Repository"
-      },
-      {
-        "id": "anb-download",
-        "text": "Download",
-        "url": "https://archlinux.org/download/",
-        "title": "Get Arch Linux"
       }
     ]
   }

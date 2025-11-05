@@ -1,61 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
-const ConfigurableNavbar = () => {
-	const [config, setConfig] = useState(null);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		fetch('/navbar-config.json')
-			.then(response => response.json())
-			.then(data => {
-				setConfig(data);
-				setLoading(false);
-			})
-			.catch(error => {
-				console.error('Failed to load navbar configuration:', error);
-				setLoading(false);
-			});
-	}, []);
-
-	if (loading) {
-		return (
-			<div id="archnavbar">
-				<div id="logo">
-					<a href="#" title="Loading...">
-						Loading...
-					</a>
-				</div>
-				<div id="archnavbarmenu">
-					<ul id="archnavbarlist">
-						<li><a href="#">Loading...</a></li>
-					</ul>
-				</div>
-			</div>
-		);
-	}
-
-	if (!config) {
-		return <div id="archnavbar">Failed to load navigation</div>;
-	}
+const ConfigurableNavbar = ({ title, showMenu = true, config }) => {
+	// Use provided title or fallback to config
+	const navTitle = title || config?.navbar?.logo?.text || 'Rebuilderd';
+	const menuItems = config?.navbar?.menuItems || [];
 
 	return (
 		<div id="archnavbar">
 			<div id="logo">
-				<a href={config.logo.url} title={config.logo.title}>
-					{config.logo.text}
-				</a>
+				<h1>{navTitle}</h1>
 			</div>
-			<div id="archnavbarmenu">
-				<ul id="archnavbarlist">
-					{config.menuItems.map(item => (
-						<li key={item.id} id={item.id}>
-							<a href={item.url} title={item.title}>
-								{item.text}
-							</a>
-						</li>
-					))}
-				</ul>
-			</div>
+			{showMenu && menuItems.length > 0 && (
+				<div id="archnavbarmenu">
+					<ul id="archnavbarlist">
+						{menuItems.map(item => (
+							<li key={item.id} id={item.id}>
+								<a href={item.url} title={item.title}>
+									{item.text}
+								</a>
+							</li>
+						))}
+					</ul>
+				</div>
+			)}
 		</div>
 	);
 };

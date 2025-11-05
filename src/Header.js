@@ -5,33 +5,16 @@ import ConfigurableNavbar from './navbar';
 
 
 class Header extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      config: null,
-      configLoading: true
-    };
-  }
-
-  componentDidMount() {
-    fetch('/config.json')
-      .then(response => response.json())
-      .then(data => {
-        this.setState({ config: data, configLoading: false });
-      })
-      .catch(error => {
-        console.error('Failed to load config:', error);
-        this.setState({ configLoading: false });
-      });
-  }
 
   calculateSuiteStats(data) {
-    let good = data['good'];
-    let bad = data['bad'];
-    let unknown = data['unknown'];
+    let good = data['good'] || 0;
+    let bad = data['bad'] || 0;
+    let fail = data['fail'] || 0;
+    let unknown = data['unknown'] || 0;
 
-    const percentage = (good / (good + bad + unknown) * 100).toFixed(1);
-    return {good, bad, unknown, percentage};
+    const total = good + bad + fail + unknown;
+    const percentage = total > 0 ? (good / total * 100).toFixed(1) : '0.0';
+    return {good, bad, fail, unknown, percentage};
   }
 
   // TODO: this is duplciated code from App.js
@@ -50,28 +33,30 @@ class Header extends React.Component {
   }
 
   render() {
-    const {fetchFailed, dashboard, suites } = this.props;
-    const { config, configLoading } = this.state;
-    const overall = {good: 0, unknown: 0, bad: 0};
+    const {fetchFailed, dashboard, config, activeDistribution } = this.props;
+    const configLoading = !config;
+
+    // v1 API returns {rebuilds: {good, bad, fail, unknown}, jobs: {running, available, pending}}
+    // v0 API returned {suites: {...}}
+    let overall = {good: 0, bad: 0, fail: 0, unknown: 0};
     const suitesStats = [];
 
-    if (dashboard) {
-      for (const [key, value] of Object.entries(dashboard.suites)) {
-        const {good, bad, unknown, percentage} = this.calculateSuiteStats(value);
-        overall['good'] += good;
-        overall['bad'] += bad;
-        overall['unknown'] += unknown;
-        suitesStats.push({name: key, good, bad, unknown, percentage});
-      }
-      suitesStats.sort(this.compareSuites);
+    if (dashboard && dashboard.rebuilds) {
+      // v1 API structure - overall stats only
+      overall = {
+        good: dashboard.rebuilds.good || 0,
+        bad: dashboard.rebuilds.bad || 0,
+        fail: dashboard.rebuilds.fail || 0,
+        unknown: dashboard.rebuilds.unknown || 0
+      };
     }
 
-    const {good, bad, unknown, percentage} = this.calculateSuiteStats(overall);
-    const overallStats = {name: 'overall', good, bad, unknown, percentage};
+    const {good, bad, fail, unknown, percentage} = this.calculateSuiteStats(overall);
+    const overallStats = {name: 'overall', good, bad, fail, unknown, percentage};
 
     return (
       <section className="hero is-primary">
-        <ConfigurableNavbar />
+        <ConfigurableNavbar config={config} />
         <div className="hero-body">
           <div id="status">
             <h1 className="title">Reproducible status</h1>
@@ -95,7 +80,7 @@ class Header extends React.Component {
             <p><b>Loading stats...</b></p>
             }
             {!fetchFailed && dashboard &&
-            <li key="overall">{config?.branding?.name || 'Arch Linux'} is <span className="has-text-weight-bold">{ overallStats.percentage }%</span> reproducible with <span className="bad has-text-weight-bold">{ overallStats.bad } bad</span>  <span className="unknown has-text-weight-bold">{ overallStats.unknown } unknown</span> and <span className="good has-text-weight-bold">{ overallStats.good } good</span> packages.</li>
+            <li key="overall">{config?.branding?.name || activeDistribution || 'Rebuilderd'} is <span className="has-text-weight-bold">{ overallStats.percentage }%</span> reproducible with <span className="bad has-text-weight-bold">{ overallStats.bad } bad</span>  <span className="fail has-text-weight-bold">{ overallStats.fail } fail</span>  <span className="unknown has-text-weight-bold">{ overallStats.unknown } unknown</span> and <span className="good has-text-weight-bold">{ overallStats.good } good</span> packages.</li>
             }
             {!fetchFailed && suitesStats.map(function(repo, index) {
               return <li key={ index }><a href={"#" + repo.name }>[{ repo.name }]</a> repository is <span className="has-text-weight-bold">{ repo.percentage }%</span> reproducible with <span className="bad has-text-weight-bold">{ repo.bad } bad</span>  <span className="unknown has-text-weight-bold">{ repo.unknown } unknown</span> and <span className="good has-text-weight-bold">{ repo.good } good</span> packages.</li>;

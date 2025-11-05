@@ -7,15 +7,10 @@ const { Section } = require('./Section');
 
 class Body extends React.Component {
   render() {
-    const { fetchFailed, suites, config } = this.props;
+    const { fetchFailed, suites, config, distro, release } = this.props;
 
     return (
       <React.Fragment>
-      {!fetchFailed && !suites.length &&
-      <section className="section">
-        <p><b>Loading packages...</b></p>
-      </section>
-      }
       { fetchFailed &&
       <section className="section">
         <div className="tile box has-background-danger">
@@ -26,7 +21,7 @@ class Body extends React.Component {
       </section>
       }
       {suites.map(suite =>
-        <Section key={suite.name} suite={suite} config={config}/>
+        <Section key={suite.key} suite={suite} config={config} distro={distro} release={release}/>
       )}
       </React.Fragment>
     )

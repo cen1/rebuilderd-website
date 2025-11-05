@@ -8,6 +8,7 @@
   },
   "styling": {
     "logo": "assets/debian/Debian-OpenLogo-Horizontal.svg",
+    "backgroundImage": "assets/debian/background_trixie.svg",
     "colors": {
       "navbarBorder": "#c70036",
       "navbarBackground": "#333"
@@ -15,8 +16,8 @@
   },
   "content": {
     "welcomeText": {
-      "paragraph1": "Welcome to the Debian <a href=\"https://github.com/kpcyrd/rebuilderd\">rebuilderd</a> instance run by <...>, this page shows the results of verification builds of Debian packages in the repositories in an effort to be fully reproducible.",
-      "paragraph2": "For more information read the <a href=\"https://reproducible-builds.org/\">Reproducible Builds website</a> or join the <a href=\"ircs://irc.oftc.net/debian-reproducible\">#debian-reproducible</a> IRC channel on <a href=\"https://www.oftc.net/\">OFTC</a>."
+      "paragraph1": "<b>sid/amd64</b> Welcome to the Debian <a href=\"https://github.com/kpcyrd/rebuilderd\">rebuilderd</a> instance run by cen at xpam.pl, this page shows the results of verification builds of Debian packages in the repositories in an effort to be fully reproducible.",
+      "paragraph2": "For more information read the <a href=\"https://reproducible-builds.org/\">Reproducible Builds website</a> or join the <a href=\"ircs://irc.oftc.net/debian-reproducible\">#debian-reproducible</a> IRC channel on <a href=\"https://www.oftc.net/\">OFTC</a>. rebuilderd_stats.py results <a href=\"/rebuilderd_stats/\">here</a>."
     },
     "packageUrlTemplate": "https://packages.debian.org/search?keywords={name}"
   },
@@ -40,40 +41,10 @@
         "title": "Debian Package Database"
       },
       {
-        "id": "dnb-forums",
-        "text": "Forums",
-        "url": "https://forums.debian.net/",
-        "title": "Community forums"
-      },
-      {
-        "id": "dnb-wiki",
-        "text": "Wiki",
-        "url": "https://wiki.debian.org/",
-        "title": "Community documentation"
-      },
-      {
         "id": "dnb-salsa",
         "text": "Salsa",
         "url": "https://salsa.debian.org/",
         "title": "Debian GitLab instance"
-      },
-      {
-        "id": "dnb-security",
-        "text": "Security",
-        "url": "https://security-tracker.debian.org/",
-        "title": "Debian Security Tracker"
-      },
-      {
-        "id": "dnb-bugs",
-        "text": "Bugs",
-        "url": "https://bugs.debian.org/",
-        "title": "Debian Bug Tracking System"
-      },
-      {
-        "id": "dnb-download",
-        "text": "Download",
-        "url": "https://www.debian.org/distrib/",
-        "title": "Get Debian"
       }
     ]
   }

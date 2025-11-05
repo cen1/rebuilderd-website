@@ -1,7 +1,6 @@
 FROM nginx:alpine
 
 # Build arguments for configuration
-ARG DISTRO=debian
 ARG REBUILDERD_URL=http://localhost:8080
 ARG REBUILDERD_AUTH_TOKEN=""
 
@@ -18,11 +17,10 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 # Set environment variables for build
-ENV DISTRO=${DISTRO}
 ENV REBUILDERD_URL=${REBUILDERD_URL}
 ENV REBUILDERD_AUTH_TOKEN=${REBUILDERD_AUTH_TOKEN}
 
-# Build the application
+# Build the application (universal build for all distributions)
 RUN yarn run build:prod
 
 # Copy built files to nginx directory

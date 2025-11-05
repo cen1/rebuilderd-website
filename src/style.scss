@@ -1,19 +1,12 @@
 @charset "utf-8";
 
-// Import modules first
-@use "distro-config.scss";
-@use "../node_modules/bulma/sass/utilities" as *;
-@use "../node_modules/bulma/sass/utilities/mixins" as *;
-@use "../node_modules/bulma/sass/helpers" as *;
-@use "../node_modules/bulma/sass/base" as *;
-@use "../node_modules/bulma/sass/elements/box" as *;
-@use "../node_modules/bulma/sass/elements/title" as *;
-@use "../node_modules/bulma/sass/layout/container" as *;
-@use "../node_modules/bulma/sass/layout/footer" as *;
-@use "../node_modules/bulma/sass/layout/hero" as *;
-@use "../node_modules/bulma/sass/layout/section" as *;
-@use "../node_modules/bulma/sass/grid/columns" as *;
 @use "sass:color";
+
+// Import Bulma mixins first (needed for responsive breakpoints)
+@use "../node_modules/bulma/sass/utilities/mixins" as *;
+
+// Import Bulma with @use
+@use "../node_modules/bulma/bulma.scss" as *;
 
 // Generic colors (no longer Arch-specific)
 $color-green: #5cb85c;
@@ -41,20 +34,10 @@ body {
 	align-items: center;
 	justify-content: space-between;
 
-	#logo {
-		background-repeat: no-repeat;
-		background-position: left center;
-		background-size: contain;
-		height: 40px;
-		width: 150px;
-		margin: 0 20px;
-		
-		a {
-			display: block;
-			height: 100%;
-			text-indent: -9999px;
-			overflow: hidden;
-		}
+	h1 {
+		color: white;
+		font-size: large;
+		font-weight: bold;
 	}
 
 	#archnavbarmenu {
