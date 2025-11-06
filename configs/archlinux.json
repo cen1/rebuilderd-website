@@ -5,9 +5,7 @@
     "apiUrl": "/upstream/arch/dashboard"
   },
   "branding": {
-    "name": "Arch Linux",
-    "title": "Arch Linux Reproducible Status",
-    "favicon": "assets/arch/favicon.ico"
+    "name": "Arch Linux"
   },
   "styling": {
     "logo": "assets/arch/archlogo.svg",
@@ -21,11 +19,6 @@
     "packageUrlTemplate": "https://www.archlinux.org/packages/{suite}/{architecture}/{name}"
   },
   "navbar": {
-    "logo": {
-      "text": "Arch Linux",
-      "url": "https://archlinux.org",
-      "title": "Return to the main page"
-    },
     "menuItems": [
       {
         "id": "anb-home",

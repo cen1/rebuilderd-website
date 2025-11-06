@@ -6,8 +6,6 @@
   },
   "branding": {
     "name": "Debian",
-    "title": "Debian Reproducible Status",
-    "favicon": "assets/debian/debian_icon.ico",
     "poweredBy": "assets/debian/powered_by_debian.png"
   },
   "styling": {
@@ -22,11 +20,6 @@
     "packageUrlTemplate": "https://packages.debian.org/search?keywords={name}"
   },
   "navbar": {
-    "logo": {
-      "text": "Debian",
-      "url": "https://www.debian.org",
-      "title": "Return to the main page"
-    },
     "menuItems": [
       {
         "id": "dnb-home",
