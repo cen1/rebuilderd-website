@@ -37,6 +37,12 @@
         "text": "GitLab",
         "url": "https://gitlab.archlinux.org/archlinux",
         "title": "GitLab"
+      },
+      {
+        "id": "anb-rebuilders",
+        "text": "Other rebuilders",
+        "url": "https://wiki.archlinux.org/title/Rebuilderd#Package_rebuilders",
+        "title": "Other rebuilders"
       }
     ]
   }

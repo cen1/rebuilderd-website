@@ -38,6 +38,12 @@
         "text": "Salsa",
         "url": "https://salsa.debian.org/",
         "title": "Debian GitLab instance"
+      },
+      {
+        "id": "dnb-rebuilders",
+        "text": "Other rebuilders",
+        "url": "https://wiki.debian.org/ReproducibleBuilds/rebuilderd-instances",
+        "title": "Other rebuilders"
       }
     ]
   }
