@@ -1,9 +1,12 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const configsDir = path.join(__dirname, 'configs');
 const outputPath = path.join(__dirname, 'public', 'config.json');
-const scssOutputPath = path.join(__dirname, 'src', 'distro-config.scss');
 
 console.log(`🔧 Building universal multi-distribution config`);
 
@@ -39,22 +42,5 @@ const unifiedConfig = {
 // Write unified config
 fs.writeFileSync(outputPath, JSON.stringify(unifiedConfig, null, 2));
 console.log(`✅ Unified config written to: ${outputPath}`);
-
-// Generate base SCSS (will be overridden dynamically per distribution)
-const scssContent = `// Auto-generated base configuration
-// Styling will be applied dynamically based on active distribution
-#archnavbar #logo {
-  background-size: contain !important;
-  background-position: left center !important;
-}
-
-#archnavbar {
-  background-color: #333 !important;
-  border-bottom-color: #08c !important;
-}
-`;
-
-fs.writeFileSync(scssOutputPath, scssContent);
-console.log(`✅ Base SCSS config written`);
 
 console.log(`🚀 Universal build configuration complete with ${Object.keys(distroConfigs).length} distributions!`);

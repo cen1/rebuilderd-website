@@ -1,5 +1,9 @@
 {
   "distro": "archlinux",
+  "upstream": {
+    "url": "https://reproducible.archlinux.org/",
+    "apiUrl": "/upstream/arch/dashboard"
+  },
   "branding": {
     "name": "Arch Linux",
     "title": "Arch Linux Reproducible Status",
@@ -14,10 +18,6 @@
     }
   },
   "content": {
-    "welcomeText": {
-      "paragraph1": "Welcome to the Arch Linux <a href=\"https://github.com/kpcyrd/rebuilderd\">rebuilderd</a> instance run by <...>, this page shows the results of verification builds of Arch Linux packages in the repositories in an effort to be fully reproducible.",
-      "paragraph2": "For more information read the <a href=\"https://reproducible-builds.org/\">Reproducible Builds website</a> or join the <a href=\"ircs://irc.libera.chat/archlinux-reproducible\">#archlinux-reproducible</a> IRC channel on <a href=\"https://libera.chat/\">Libera Chat</a>."
-    },
     "packageUrlTemplate": "https://www.archlinux.org/packages/{suite}/{architecture}/{name}"
   },
   "navbar": {

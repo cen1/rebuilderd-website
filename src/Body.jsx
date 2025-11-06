@@ -1,8 +1,5 @@
-'use strict';
-
-const React = require('react');
-
-const { Section } = require('./Section');
+import React from 'react';
+import { Section } from './Section';
 
 
 class Body extends React.Component {
@@ -28,4 +25,4 @@ class Body extends React.Component {
   }
 }
 
-module.exports = {Body};
+export { Body };

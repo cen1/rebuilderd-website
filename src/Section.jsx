@@ -1,7 +1,5 @@
-'use strict';
-
-const React = require('react');
-import Collapsible from 'react-collapsible'
+import React from 'react';
+import Collapsible from 'react-collapsible';
 
 function PackageList(props) {
   const { pkgs, config } = props;
@@ -418,4 +416,4 @@ class Section extends React.Component {
   }
 }
 
-module.exports = {Section};
+export { Section };

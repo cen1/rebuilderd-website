@@ -21,10 +21,11 @@ ENV REBUILDERD_URL=${REBUILDERD_URL}
 ENV REBUILDERD_AUTH_TOKEN=${REBUILDERD_AUTH_TOKEN}
 
 # Build the application (universal build for all distributions)
-RUN yarn run build:prod
+RUN yarn run build
 
 # Copy built files to nginx directory
-RUN cp -r public/* /usr/share/nginx/html/
+# Vite builds to dist/ directory (includes public assets automatically)
+RUN cp -r dist/* /usr/share/nginx/html/
 
 # Create nginx configuration with environment substitution
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template

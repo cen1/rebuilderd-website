@@ -1,5 +1,9 @@
 {
   "distro": "debian",
+  "upstream": {
+    "url": "https://reproduce.debian.net/",
+    "apiUrl": "/upstream/debian/dashboard"
+  },
   "branding": {
     "name": "Debian",
     "title": "Debian Reproducible Status",
@@ -15,10 +19,6 @@
     }
   },
   "content": {
-    "welcomeText": {
-      "paragraph1": "<b>sid/amd64</b> Welcome to the Debian <a href=\"https://github.com/kpcyrd/rebuilderd\">rebuilderd</a> instance run by cen at xpam.pl, this page shows the results of verification builds of Debian packages in the repositories in an effort to be fully reproducible.",
-      "paragraph2": "For more information read the <a href=\"https://reproducible-builds.org/\">Reproducible Builds website</a> or join the <a href=\"ircs://irc.oftc.net/debian-reproducible\">#debian-reproducible</a> IRC channel on <a href=\"https://www.oftc.net/\">OFTC</a>. rebuilderd_stats.py results <a href=\"/rebuilderd_stats/\">here</a>."
-    },
     "packageUrlTemplate": "https://packages.debian.org/search?keywords={name}"
   },
   "navbar": {

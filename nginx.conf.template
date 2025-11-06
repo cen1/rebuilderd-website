@@ -4,6 +4,10 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    # DNS resolver for proxying to external domains
+    resolver 8.8.8.8 1.1.1.1 valid=300s;
+    resolver_timeout 5s;
+
     # Proxy API calls to rebuilderd backend
     location /api {
         proxy_pass ${REBUILDERD_URL};
@@ -11,18 +15,37 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # Add auth token if provided
         proxy_set_header Authorization "Bearer ${REBUILDERD_AUTH_TOKEN}";
-        
+
         # Handle CORS
         add_header Access-Control-Allow-Origin *;
         add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
         add_header Access-Control-Allow-Headers "Origin, Content-Type, Accept, Authorization";
-        
+
         if ($request_method = OPTIONS) {
             return 204;
         }
+    }
+
+    # Proxy upstream Debian rebuilder API
+    location ~ ^/upstream/debian/(.+)/dashboard {
+        proxy_pass https://reproduce.debian.net/$1/api/v1/dashboard$is_args$args;
+        proxy_ssl_server_name on;
+        proxy_set_header Host reproduce.debian.net;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # Proxy upstream Arch rebuilder API
+    location /upstream/arch/ {
+        rewrite ^/upstream/arch/(.*)$ /api/v0/$1 break;
+        proxy_pass https://reproducible.archlinux.org;
+        proxy_ssl_server_name on;
+        proxy_set_header Host reproducible.archlinux.org;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
     # Serve static files

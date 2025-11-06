@@ -1,10 +1,6 @@
-'use strict';
-
-const React = require('react');
+import React from 'react';
 import ConfigurableNavbar from './navbar';
-
-
-const { Body } = require('./Body');
+import { Body } from './Body';
 
 class App extends React.Component {
   constructor(props) {
@@ -21,6 +17,7 @@ class App extends React.Component {
       distroConfigs: null, // All distribution configs {debian: {...}, arch: {...}}
       distroReleases: [], // Array of {distro, release} combinations
       dashboards: {}, // Dashboard data keyed by "distro-release"
+      upstreamDashboards: {}, // Upstream dashboard data keyed by "distro-release"
       releaseMetadata: {}, // Metadata (components, archs) keyed by "distro-release"
       showPackages: showPackages,
       selectedDistro: params.get('distro'),
@@ -31,7 +28,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { commonConfig, distroConfigs, distroReleases, dashboards, releaseMetadata, showPackages, selectedDistro, selectedRelease, suites, fetchFailed, loadingPackages } = this.state;
+    const { commonConfig, distroConfigs, distroReleases, dashboards, upstreamDashboards, releaseMetadata, showPackages, selectedDistro, selectedRelease, suites, fetchFailed, loadingPackages } = this.state;
 
     // If showing packages, render packages view
     if (showPackages) {
@@ -71,8 +68,8 @@ class App extends React.Component {
     // Otherwise render dashboard
     return (
       <React.Fragment>
-        {/* Main navbar at top - generic title only, no menu items */}
-        <ConfigurableNavbar title={commonConfig?.title || 'Rebuilderd'} showMenu={false} />
+        {/* Main navbar at top with common menu items */}
+        <ConfigurableNavbar title={commonConfig?.title || 'Rebuilderd'} showMenu={true} config={commonConfig} />
 
         <section className="hero is-primary">
           <div className="hero-body">
@@ -207,8 +204,49 @@ class App extends React.Component {
 
                           {/* Right side: Percentage */}
                           <div style={{ textAlign: 'right', fontSize: '2rem', fontWeight: 'bold', flex: '0 0 auto' }}>
-                            {((dashboard.rebuilds.good / (dashboard.rebuilds.good + dashboard.rebuilds.bad + dashboard.rebuilds.fail + dashboard.rebuilds.unknown)) * 100).toFixed(1)}%
-                            <div style={{ fontSize: '0.75rem', fontWeight: 'normal', marginTop: '0.25rem' }}>reproducible</div>
+                            {(() => {
+                              const localPercentage = ((dashboard.rebuilds.good / (dashboard.rebuilds.good + dashboard.rebuilds.bad + dashboard.rebuilds.fail + dashboard.rebuilds.unknown)) * 100).toFixed(1);
+                              const upstreamKey = `${distro}-${release}`;
+                              const upstreamDashboard = upstreamDashboards[upstreamKey];
+
+                              return (
+                                <>
+                                  {localPercentage}%
+                                  <div style={{ fontSize: '0.75rem', fontWeight: 'normal', marginTop: '0.25rem' }}>reproducible</div>
+
+                                  {upstreamDashboard && config?.upstream && (
+                                    (() => {
+                                      // Handle different possible upstream API structures
+                                      const upstreamRebuilds = upstreamDashboard.rebuilds || upstreamDashboard;
+                                      const upstreamGood = upstreamRebuilds.good || 0;
+                                      const upstreamBad = upstreamRebuilds.bad || 0;
+                                      const upstreamFail = upstreamRebuilds.fail || 0;
+                                      const upstreamUnknown = upstreamRebuilds.unknown || 0;
+                                      const upstreamTotal = upstreamGood + upstreamBad + upstreamFail + upstreamUnknown;
+
+                                      // Only show if we have valid upstream data
+                                      if (upstreamTotal === 0) return null;
+
+                                      const upstreamPercentage = ((upstreamGood / upstreamTotal) * 100).toFixed(1);
+
+                                      return (
+                                        <div style={{ fontSize: '0.65rem', fontWeight: 'normal', marginTop: '0.5rem', lineHeight: '1.3' }}>
+                                          Upstream rebuilder claims{' '}
+                                          <a
+                                            href={config.upstream.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ color: 'white', textDecoration: 'underline' }}
+                                          >
+                                            {upstreamPercentage}%
+                                          </a>
+                                        </div>
+                                      );
+                                    })()
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                       )}
@@ -342,9 +380,19 @@ class App extends React.Component {
 
           this.setState({ distroReleases }, () => {
             // Load dashboard and metadata for each distro-release combination
-            distroReleases.forEach(({ distro, release }) => {
+            distroReleases.forEach(async ({ distro, release }) => {
               this.loadDashboardForRelease(distro, release);
-              this.loadMetadataForRelease(distro, release);
+
+              // Load metadata first, then upstream dashboard with that metadata
+              await this.loadMetadataForRelease(distro, release);
+
+              // Load upstream dashboard if configured, using the metadata we just loaded
+              const config = this.state.distroConfigs?.[distro];
+              const key = `${distro}-${release}`;
+              const metadata = this.state.releaseMetadata[key];
+              if (config && metadata) {
+                this.loadUpstreamDashboardForRelease(distro, release, config, metadata);
+              }
             });
           });
         });
@@ -420,6 +468,91 @@ class App extends React.Component {
       });
   }
 
+  async loadUpstreamDashboardForRelease(distribution, release, config, metadata) {
+    // Check if upstream is configured for this distribution
+    if (!config?.upstream?.apiUrl || !metadata) {
+      return;
+    }
+
+    const key = `${distribution}-${release}`;
+
+    // Map release names for upstream API compatibility
+    let upstreamRelease = release;
+    if (distribution === 'debian' && release === 'sid') {
+      upstreamRelease = 'unstable';
+    }
+
+    try {
+      let normalizedData;
+
+      // Handle Debian with multiple architectures - fetch per architecture
+      if (distribution === 'debian' && metadata.architectures && metadata.architectures.length > 0) {
+        const architectures = metadata.architectures;
+        const fetchPromises = architectures.map(arch => {
+          // Build URL: /upstream/debian/amd64/dashboard
+          const archUrl = `/upstream/debian/${arch}/dashboard`;
+          const url = upstreamRelease
+            ? `${archUrl}?release=${encodeURIComponent(upstreamRelease)}`
+            : archUrl;
+          return fetch(url).then(res => res.ok ? res.json() : null).catch(() => null);
+        });
+
+        const results = await Promise.all(fetchPromises);
+
+        // Combine all architecture results
+        const aggregated = { good: 0, bad: 0, fail: 0, unknown: 0 };
+        results.forEach(data => {
+          if (data && data.rebuilds) {
+            aggregated.good += data.rebuilds.good || 0;
+            aggregated.bad += data.rebuilds.bad || 0;
+            aggregated.fail += data.rebuilds.fail || 0;
+            aggregated.unknown += data.rebuilds.unknown || 0;
+          }
+        });
+        normalizedData = { rebuilds: aggregated };
+      } else {
+        // Standard single fetch (for Arch and others)
+        const url = upstreamRelease
+          ? `${config.upstream.apiUrl}?release=${encodeURIComponent(upstreamRelease)}`
+          : config.upstream.apiUrl;
+
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        const data = await response.json();
+
+        // Normalize v0 API response (Arch) to v1 format
+        normalizedData = data;
+        if (data.suites && !data.rebuilds) {
+          // v0 API format - filter to components we're actually building
+          const aggregated = { good: 0, bad: 0, fail: 0, unknown: 0 };
+          const componentsToInclude = metadata.components || [];
+
+          componentsToInclude.forEach(componentName => {
+            const suite = data.suites[componentName];
+            if (suite) {
+              aggregated.good += suite.good || 0;
+              aggregated.bad += suite.bad || 0;
+              aggregated.fail += suite.fail || 0;
+              aggregated.unknown += suite.unknown || 0;
+            }
+          });
+          normalizedData = { rebuilds: aggregated };
+        }
+      }
+
+      this.setState((prevState) => ({
+        upstreamDashboards: {
+          ...prevState.upstreamDashboards,
+          [key]: normalizedData
+        }
+      }));
+    } catch (error) {
+      console.error(`Failed to load upstream dashboard for ${distribution}/${release}:`, error);
+    }
+  }
+
   loadConfigs() {
     // Load unified config (common + distribution-specific)
     fetch('/config.json')
@@ -472,6 +605,6 @@ class App extends React.Component {
   }
 }
 
-module.exports = {App};
+export { App };
 
 // vim: ts=2 sw=2 et:

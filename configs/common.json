@@ -1,5 +1,15 @@
 {
   "title": "xpam.pl rebuilder",
+  "navbar": {
+    "menuItems": [
+      {
+        "id": "blog",
+        "url": "https://xpam.pl",
+        "title": "Visit xpam.pl blog",
+        "text": "Blog"
+      }
+    ]
+  },
   "content": {
     "welcomeText": {
       "paragraph1": "Welcome to the <a href=\"https://github.com/kpcyrd/rebuilderd\">rebuilderd</a> instance run by <a href='https://github.com/cen1'>cen1</a>. This page shows the results of verification builds of packages in various distributions in an effort to be fully reproducible.",
