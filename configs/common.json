@@ -14,9 +14,36 @@
     "welcomeText": {
       "paragraph1": "Welcome to the <a href=\"https://github.com/kpcyrd/rebuilderd\">rebuilderd</a> instance run by <a href='https://github.com/cen1'>cen1</a>. This page shows the results of verification builds of packages in various distributions in an effort to be fully reproducible.",
       "paragraph2": "For more information read the <a href=\"https://reproducible-builds.org/\">Reproducible Builds website</a>."
-    }
+    },
+    "workers": [
+      {
+        "name": "Pendragon",
+        "arch": "amd64",
+        "cpu": "AMD EPYC 4464P 12C",
+        "ram": "128G"
+      },
+      {
+        "name": "Psylocke",
+        "arch": "arm64",
+        "cpu": "Orange Pi 6 Plus 12C",
+        "ram": "32G"
+      },
+      {
+        "name": "Galactus",
+        "arch": "amd64",
+        "cpu": "Intel Core i7-8700 6C",
+        "ram": "128G"
+      },
+      {
+        "name": "Tux",
+        "arch": "amd64",
+        "cpu": "AMD Ryzen AI 9 HX 370 12C",
+        "ram": "64G"
+      }
+    ]
   },
   "footer": {
-    "text": "Source on <a href=\"https://github.com/cen1/rebuilderd-website\">GitHub</a>. License is <a href=\"http://opensource.org/licenses/mit-license.php\">MIT</a>."
+    "text": "Source on <a href=\"https://github.com/cen1/rebuilderd-website\">GitHub</a>. License is <a href=\"http://opensource.org/licenses/mit-license.php\">MIT</a>.",
+    "poweredBy": "assets/debian/powered_by_debian.png"
   }
 }

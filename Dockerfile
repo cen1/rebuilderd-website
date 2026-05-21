@@ -1,36 +1,35 @@
-FROM nginx:alpine
+# Build stage
+FROM node:24-alpine AS builder
 
 # Build arguments for configuration
 ARG REBUILDERD_URL=http://localhost:8080
 ARG REBUILDERD_AUTH_TOKEN=""
 
-# Install Node.js and yarn for build process
-RUN apk add --no-cache nodejs npm yarn
-
-# Copy source files
 WORKDIR /app
-COPY package*.json ./
-COPY yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN corepack enable pnpm
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile --network-concurrency 10
 
-# Copy all source files
 COPY . .
 
-# Set environment variables for build
 ENV REBUILDERD_URL=${REBUILDERD_URL}
 ENV REBUILDERD_AUTH_TOKEN=${REBUILDERD_AUTH_TOKEN}
 
-# Build the application (universal build for all distributions)
-RUN yarn run build
+RUN pnpm run build
 
-# Copy built files to nginx directory
-# Vite builds to dist/ directory (includes public assets automatically)
-RUN cp -r dist/* /usr/share/nginx/html/
+# Serve stage
+FROM nginx:alpine
 
-# Create nginx configuration with environment substitution
-COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+ARG REBUILDERD_URL=http://localhost:8080
+ARG REBUILDERD_AUTH_TOKEN=""
 
-# Expose port 80
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf.template /tmp/nginx.conf.template
+RUN envsubst '${REBUILDERD_URL} ${REBUILDERD_AUTH_TOKEN}' \
+    < /tmp/nginx.conf.template \
+    > /etc/nginx/conf.d/default.conf \
+    && rm /tmp/nginx.conf.template
+
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]

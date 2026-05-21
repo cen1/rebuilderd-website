@@ -8,11 +8,14 @@
   "type": "module",
   "scripts": {
     "config": "node build-config.js",
-    "dev": "npm run config && npx vite",
-    "build": "npm run config && npx vite build",
-    "preview": "npx vite preview"
+    "dev": "pnpm run config && pnpm exec vite",
+    "dev:prod": "pnpm run config && REACT_APP_API_BASE_URL=http://192.168.1.241:8484 pnpm exec vite",
+    "build": "pnpm run config && pnpm exec vite build",
+    "preview": "pnpm exec vite preview"
   },
-  "dependencies": {},
+  "dependencies": {
+    "chart.js": "^4.5.1"
+  },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.0",
     "bulma": "^1.0.4",
@@ -24,5 +27,8 @@
     "sass": "^1.93.3",
     "vite": "^7.2.0"
   },
-  "browserslist": "> 0.25%, not dead"
+  "browserslist": "> 0.25%, not dead",
+  "engines": {
+    "node": ">=24"
+  }
 }

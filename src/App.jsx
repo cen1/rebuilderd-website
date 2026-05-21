@@ -1,6 +1,17 @@
 import React from 'react';
 import ConfigurableNavbar from './navbar';
 import { Body } from './Body';
+import { StatsCharts } from './StatsCharts';
+
+function formatDuration(startedAt) {
+  if (!startedAt) return '-';
+  const utc = startedAt.endsWith('Z') ? startedAt : startedAt + 'Z';
+  const s = Math.floor((Date.now() - new Date(utc).getTime()) / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m${s % 60}s`;
+  return `${Math.floor(m / 60)}h${m % 60}m`;
+}
 
 class App extends React.Component {
   constructor(props) {
@@ -9,7 +20,7 @@ class App extends React.Component {
     // Check for query parameters to show packages
     const params = new URLSearchParams(window.location.search);
     // Release can be empty for rolling distributions
-    const showPackages = params.has('distro') && (params.has('release') || params.get('release') === '');
+    const showPackages = params.has('distro') && (params.has('release') || params.get('release') === '') && params.has('arch');
 
     this.state = {
       fetchFailed: false,
@@ -17,18 +28,22 @@ class App extends React.Component {
       distroConfigs: null, // All distribution configs {debian: {...}, arch: {...}}
       distroReleases: [], // Array of {distro, release} combinations
       dashboards: {}, // Dashboard data keyed by "distro-release"
+      archDashboards: {}, // Per-architecture dashboard data keyed by "distro-release-arch"
+      archQueues: {}, // Queue data keyed by "distro-release-arch"
       upstreamDashboards: {}, // Upstream dashboard data keyed by "distro-release"
       releaseMetadata: {}, // Metadata (components, archs) keyed by "distro-release"
+      workerJobs: {}, // Aggregated job stats per architecture keyed by arch name
       showPackages: showPackages,
       selectedDistro: params.get('distro'),
       selectedRelease: params.get('release'),
+      selectedArch: params.get('arch'),
       suites: [],
       loadingPackages: false
     };
   }
 
   render() {
-    const { commonConfig, distroConfigs, distroReleases, dashboards, upstreamDashboards, releaseMetadata, showPackages, selectedDistro, selectedRelease, suites, fetchFailed, loadingPackages } = this.state;
+    const { commonConfig, distroConfigs, distroReleases, dashboards, archDashboards, archQueues, upstreamDashboards, releaseMetadata, workerJobs, showPackages, selectedDistro, selectedRelease, selectedArch, suites, fetchFailed, loadingPackages } = this.state;
 
     // If showing packages, render packages view
     if (showPackages) {
@@ -45,7 +60,7 @@ class App extends React.Component {
             <div className="hero-body">
               <div className="container">
                 <h1 className="title">
-                  {config?.branding?.name || selectedDistro} - {selectedRelease.toUpperCase()} Packages
+                  {config?.branding?.name || selectedDistro} - {selectedRelease.toUpperCase()} - {selectedArch} Packages
                 </h1>
                 <p>
                   <a href="/">← Back to dashboard</a>
@@ -53,6 +68,8 @@ class App extends React.Component {
               </div>
             </div>
           </section>
+
+          <StatsCharts distro={selectedDistro} release={selectedRelease} arch={selectedArch} />
 
           <Body fetchFailed={fetchFailed} suites={suites} config={config} distro={selectedDistro} release={selectedRelease} />
 
@@ -168,10 +185,8 @@ class App extends React.Component {
                           color: 'white',
                           padding: '1rem 1.5rem',
                           display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
+                          flexDirection: 'column',
                           margin: '0 0 1rem 0',
-                          gap: '1rem',
                           ...(config?.styling?.backgroundImage && {
                             backgroundImage: `url("${config.styling.backgroundImage}")`,
                             backgroundSize: 'cover',
@@ -179,31 +194,18 @@ class App extends React.Component {
                             backgroundRepeat: 'no-repeat'
                           })
                         }}>
-                          {/* Left side: Release, Components, Architectures */}
-                          <div style={{ textAlign: 'left', fontSize: '0.9rem', flex: '1' }}>
-                            <div>Release: <span style={{ fontWeight: 'bold' }}>{release ? release : 'rolling'}</span></div>
-                            {metadata && metadata.components && metadata.components.length > 0 && (
-                              <div>Components: <span style={{ fontWeight: 'bold' }}>{metadata.components.join(', ')}</span></div>
-                            )}
-                            {metadata && metadata.architectures && metadata.architectures.length > 0 && (
-                              <div>Architectures: <span style={{ fontWeight: 'bold' }}>{metadata.architectures.join(', ')}</span></div>
-                            )}
-                            <div style={{ marginTop: '0.5rem' }}>
-                              <a
-                                href={`?distro=${distro}&release=${release}`}
-                                style={{
-                                  color: 'white',
-                                  textDecoration: 'underline',
-                                  fontSize: '0.85rem'
-                                }}
-                              >
-                                View all rebuilt packages →
-                              </a>
+                          {/* Top row: Release/Components + Percentage */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                            {/* Left side: Release, Components */}
+                            <div style={{ textAlign: 'left', fontSize: '0.9rem', flex: '1' }}>
+                              <div>Release: <span style={{ fontWeight: 'bold' }}>{release ? release : 'rolling'}</span></div>
+                              {metadata && metadata.components && metadata.components.length > 0 && (
+                                <div>Components: <span style={{ fontWeight: 'bold' }}>{metadata.components.filter(Boolean).join(', ') || '/'}</span></div>
+                              )}
                             </div>
-                          </div>
 
-                          {/* Right side: Percentage */}
-                          <div style={{ textAlign: 'right', fontSize: '2rem', fontWeight: 'bold', flex: '0 0 auto' }}>
+                            {/* Right side: Percentage */}
+                            <div style={{ textAlign: 'right', fontSize: '2rem', fontWeight: 'bold', flex: '0 0 auto' }}>
                             {(() => {
                               const localPercentage = ((dashboard.rebuilds.good / (dashboard.rebuilds.good + dashboard.rebuilds.bad + dashboard.rebuilds.fail + dashboard.rebuilds.unknown)) * 100).toFixed(1);
                               const upstreamKey = `${distro}-${release}`;
@@ -229,11 +231,20 @@ class App extends React.Component {
 
                                       const upstreamPercentage = ((upstreamGood / upstreamTotal) * 100).toFixed(1);
 
+                                      const upstreamUrl = (() => {
+                                        if (config.upstream.urlTemplate) {
+                                          let rel = release;
+                                          if (distro === 'debian' && release === 'sid') rel = 'unstable';
+                                          return config.upstream.urlTemplate.replace('{release}', rel);
+                                        }
+                                        return config.upstream.url;
+                                      })();
+
                                       return (
                                         <div style={{ fontSize: '0.65rem', fontWeight: 'normal', marginTop: '0.5rem', lineHeight: '1.3' }}>
                                           Upstream rebuilder claims{' '}
                                           <a
-                                            href={config.upstream.url}
+                                            href={upstreamUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             style={{ color: 'white', textDecoration: 'underline' }}
@@ -247,55 +258,124 @@ class App extends React.Component {
                                 </>
                               );
                             })()}
+                            </div>
                           </div>
+
+                          {/* Arch table below release/percentage row */}
+                          {metadata && metadata.architectures && metadata.architectures.length > 0 && (
+                            <div style={{ marginTop: '0.75rem' }}>
+                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                                <thead>
+                                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.3)' }}>
+                                    <th style={{ textAlign: 'left', padding: '1px 4px', fontWeight: 'normal', color: 'white' }}>Arch</th>
+                                    <th style={{ textAlign: 'right', padding: '1px 4px', fontWeight: 'normal', color: 'white' }}>Repro</th>
+                                    <th style={{ textAlign: 'left', padding: '1px 4px', fontWeight: 'normal', color: 'white' }}>Building</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {metadata.architectures.map(arch => {
+                                    const archKey = `${distro}-${release}-${arch}`;
+                                    const archDashboard = archDashboards[archKey];
+                                    const queue = archQueues[archKey];
+                                    let percentage = '...';
+                                    if (archDashboard && archDashboard.rebuilds) {
+                                      const total = archDashboard.rebuilds.good + archDashboard.rebuilds.bad + archDashboard.rebuilds.fail + archDashboard.rebuilds.unknown;
+                                      percentage = total > 0 ? ((archDashboard.rebuilds.good / total) * 100).toFixed(1) + '%' : '0%';
+                                    }
+                                    const inProgress = (queue?.inProgress || [])
+                                      .sort((a, b) => new Date(b.started_at) - new Date(a.started_at))
+                                      .slice(0, 5);
+                                    const pending = queue?.pending ?? '...';
+                                    return (
+                                      <tr key={arch}>
+                                        <td style={{ padding: '2px 4px', whiteSpace: 'nowrap', verticalAlign: 'top' }}>
+                                          <span style={{ fontWeight: 'bold', color: 'white' }}>{arch}</span>
+                                        </td>
+                                        <td style={{ padding: '2px 4px', textAlign: 'right', whiteSpace: 'nowrap', verticalAlign: 'top', color: 'white' }}>
+                                          {percentage}
+                                        </td>
+                                        <td style={{ padding: '2px 4px', verticalAlign: 'top' }}>
+                                          {inProgress.length === 0
+                                            ? <span style={{ opacity: 0.5, color: 'white' }}>-</span>
+                                            : inProgress.map(job => (
+                                                <div key={job.id} style={{ marginBottom: '2px' }}>
+                                                  <span style={{ display: 'inline-flex', borderRadius: '4px', overflow: 'hidden', fontSize: '0.7rem', whiteSpace: 'nowrap' }}>
+                                                    <span style={{ background: '#555', color: '#fff', padding: '2px 6px' }} title={`${job.name} ${job.version}`}>{(() => { const full = `${job.name} ${job.version}`; return full.length > 35 ? full.slice(0, 35) + '…' : full; })()}</span>
+                                                    <span style={{ background: '#0075ca', color: '#fff', padding: '2px 6px' }}><span className="clock-pulse">🕐</span> {formatDuration(job.started_at)}</span>
+                                                  </span>
+                                                </div>
+                                              ))
+                                          }
+                                          <div style={{ marginTop: '4px', color: 'white', opacity: 0.85 }}>
+                                            Queue: {pending} &nbsp;·&nbsp; <a href={`?distro=${distro}&release=${release}&arch=${arch}`} style={{ color: 'white', textDecoration: 'underline' }}>View All →</a>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
                         </div>
                       )}
 
                       {/* Dashboard stats */}
                       {dashboard && dashboard.rebuilds ? (
                         <div style={{ padding: '0 1.5rem 1.5rem' }}>
-                          <div className="columns is-mobile is-multiline" style={{ textAlign: 'center' }}>
-                            <div className="column is-half">
-                              <a href={`?distro=${distro}&release=${release}&status=GOOD&letter=A`} style={{ textDecoration: 'none' }}>
-                                <div className="box" style={{ backgroundColor: '#23d160', color: 'white', cursor: 'pointer', transition: 'opacity 0.2s' }}
-                                     onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
-                                     onMouseOut={(e) => e.currentTarget.style.opacity = '1'}>
-                                  <p className="heading" style={{ color: 'white' }}>Good</p>
-                                  <p className="title is-5" style={{ color: 'white' }}>{dashboard.rebuilds.good}</p>
+                          {(() => {
+                            const defaultArch = metadata?.architectures?.[0] || '';
+                            return (
+                              <>
+                              <p style={{ fontSize: '0.7rem', color: '#888', marginBottom: '0.5rem', textAlign: 'center' }}
+                                 title="Count of builds">
+                                ⓘ Count of builds with a particular end status. Since a single build can produce multiple binaries, the package listing can show more results.
+                              </p>
+                              <div className="columns is-mobile is-multiline" style={{ textAlign: 'center' }}>
+                                <div className="column is-half">
+                                  <a href={`?distro=${distro}&release=${release}&arch=${defaultArch}&status=GOOD`} style={{ textDecoration: 'none' }}>
+                                    <div className="box" style={{ backgroundColor: '#23d160', color: 'white', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                                         onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+                                         onMouseOut={(e) => e.currentTarget.style.opacity = '1'}>
+                                      <p className="heading" style={{ color: 'white' }}>Good</p>
+                                      <p className="title is-5" style={{ color: 'white' }}>{dashboard.rebuilds.good}</p>
+                                    </div>
+                                  </a>
                                 </div>
-                              </a>
-                            </div>
-                            <div className="column is-half">
-                              <a href={`?distro=${distro}&release=${release}&status=BAD&letter=A`} style={{ textDecoration: 'none' }}>
-                                <div className="box" style={{ backgroundColor: '#ff3860', color: 'white', cursor: 'pointer', transition: 'opacity 0.2s' }}
-                                     onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
-                                     onMouseOut={(e) => e.currentTarget.style.opacity = '1'}>
-                                  <p className="heading" style={{ color: 'white' }}>Bad</p>
-                                  <p className="title is-5" style={{ color: 'white' }}>{dashboard.rebuilds.bad}</p>
+                                <div className="column is-half">
+                                  <a href={`?distro=${distro}&release=${release}&arch=${defaultArch}&status=BAD`} style={{ textDecoration: 'none' }}>
+                                    <div className="box" style={{ backgroundColor: '#ff3860', color: 'white', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                                         onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+                                         onMouseOut={(e) => e.currentTarget.style.opacity = '1'}>
+                                      <p className="heading" style={{ color: 'white' }}>Bad</p>
+                                      <p className="title is-5" style={{ color: 'white' }}>{dashboard.rebuilds.bad}</p>
+                                    </div>
+                                  </a>
                                 </div>
-                              </a>
-                            </div>
-                            <div className="column is-half">
-                              <a href={`?distro=${distro}&release=${release}&status=FAIL&letter=A`} style={{ textDecoration: 'none' }}>
-                                <div className="box" style={{ backgroundColor: '#ffdd57', color: '#363636', cursor: 'pointer', transition: 'opacity 0.2s' }}
-                                     onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
-                                     onMouseOut={(e) => e.currentTarget.style.opacity = '1'}>
-                                  <p className="heading" style={{ color: '#363636' }}>Fail</p>
-                                  <p className="title is-5" style={{ color: '#363636' }}>{dashboard.rebuilds.fail}</p>
+                                <div className="column is-half">
+                                  <a href={`?distro=${distro}&release=${release}&arch=${defaultArch}&status=FAIL`} style={{ textDecoration: 'none' }}>
+                                    <div className="box" style={{ backgroundColor: '#ffdd57', color: '#363636', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                                         onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+                                         onMouseOut={(e) => e.currentTarget.style.opacity = '1'}>
+                                      <p className="heading" style={{ color: '#363636' }}>Fail</p>
+                                      <p className="title is-5" style={{ color: '#363636' }}>{dashboard.rebuilds.fail}</p>
+                                    </div>
+                                  </a>
                                 </div>
-                              </a>
-                            </div>
-                            <div className="column is-half">
-                              <a href={`?distro=${distro}&release=${release}&status=UNKWN&letter=A`} style={{ textDecoration: 'none' }}>
-                                <div className="box" style={{ backgroundColor: '#7a7a7a', color: 'white', cursor: 'pointer', transition: 'opacity 0.2s' }}
-                                     onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
-                                     onMouseOut={(e) => e.currentTarget.style.opacity = '1'}>
-                                  <p className="heading" style={{ color: 'white' }}>Unknown</p>
-                                  <p className="title is-5" style={{ color: 'white' }}>{dashboard.rebuilds.unknown}</p>
+                                <div className="column is-half">
+                                  <a href={`?distro=${distro}&release=${release}&arch=${defaultArch}&status=UNKWN`} style={{ textDecoration: 'none' }}>
+                                    <div className="box" style={{ backgroundColor: '#7a7a7a', color: 'white', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                                         onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+                                         onMouseOut={(e) => e.currentTarget.style.opacity = '1'}>
+                                      <p className="heading" style={{ color: 'white' }}>Unknown</p>
+                                      <p className="title is-5" style={{ color: 'white' }}>{dashboard.rebuilds.unknown}</p>
+                                    </div>
+                                  </a>
                                 </div>
-                              </a>
-                            </div>
-                          </div>
+                              </div>
+                              </>
+                            );
+                          })()}
                         </div>
                       ) : (
                         <p className="has-text-centered">Loading dashboard...</p>
@@ -312,24 +392,68 @@ class App extends React.Component {
           </div>
         </section>
 
+        {/* Workers table */}
+        {commonConfig?.content?.workers && commonConfig.content.workers.length > 0 && (
+          <section className="section" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
+            <div className="container">
+              <table className="table is-striped is-narrow is-hoverable" style={{ margin: '0 auto', fontSize: '0.75rem', maxWidth: '1000px' }}>
+                <thead>
+                  <tr>
+                    <th>Worker name</th>
+                    <th>Architecture</th>
+                    <th>Platform</th>
+                    <th>RAM</th>
+                    <th style={{ borderLeft: '3px double #ddd' }}>Running</th>
+                    <th>Pending</th>
+                    <th>Available jobs</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    const sorted = [...commonConfig.content.workers].sort((a, b) => a.arch.localeCompare(b.arch));
+                    const archCounts = {};
+                    sorted.forEach(w => { archCounts[w.arch] = (archCounts[w.arch] || 0) + 1; });
+                    const archSeen = {};
+                    return sorted.map((worker, index) => {
+                      const jobs = workerJobs[worker.arch] || { running: '-', pending: '-', available: '-' };
+                      const isFirst = !archSeen[worker.arch];
+                      archSeen[worker.arch] = true;
+                      return (
+                        <tr key={index}>
+                          <td><strong>{worker.name}</strong></td>
+                          <td>{worker.arch}</td>
+                          <td>{worker.cpu}</td>
+                          <td>{worker.ram}</td>
+                          {isFirst && (
+                            <>
+                              <td rowSpan={archCounts[worker.arch]} style={{ borderLeft: '3px double #ddd', verticalAlign: 'middle' }}>{jobs.running}</td>
+                              <td rowSpan={archCounts[worker.arch]} style={{ verticalAlign: 'middle' }}>{jobs.pending}</td>
+                              <td rowSpan={archCounts[worker.arch]} style={{ verticalAlign: 'middle' }}>{jobs.available}</td>
+                            </>
+                          )}
+                        </tr>
+                      );
+                    });
+                  })()}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
         {/* Common footer */}
         <footer className="footer">
           <div className="content has-text-centered">
             <p>Source on <a href="https://github.com/cen1/rebuilderd-website">GitHub</a>. License is <a href="http://opensource.org/licenses/mit-license.php">MIT</a>.</p>
 
-            {/* Powered by logos from all distros */}
-            {distroConfigs && Object.values(distroConfigs).some(config => config?.branding?.poweredBy) && (
-              <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1.5rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
-                {Object.values(distroConfigs).map((config, index) =>
-                  config?.branding?.poweredBy ? (
-                    <img
-                      key={index}
-                      src={config.branding.poweredBy}
-                      alt={`Powered by ${config.branding?.name || 'distribution'}`}
-                      style={{ maxHeight: '80px', maxWidth: '200px' }}
-                    />
-                  ) : null
-                )}
+            {/* Powered by - host machine logo */}
+            {commonConfig?.footer?.poweredBy && (
+              <div style={{ marginTop: '1.5rem' }}>
+                <img
+                  src={commonConfig.footer.poweredBy}
+                  alt="Powered by"
+                  style={{ maxHeight: '80px', maxWidth: '200px' }}
+                />
               </div>
             )}
           </div>
@@ -376,20 +500,31 @@ class App extends React.Component {
         );
 
         Promise.all(releasePromises).then(results => {
-          const distroReleases = results.flat();
+          const distroReleases = results.flat().sort((a, b) => {
+            const d = a.distro.localeCompare(b.distro);
+            return d !== 0 ? d : a.release.localeCompare(b.release);
+          });
 
           this.setState({ distroReleases }, () => {
             // Load dashboard and metadata for each distro-release combination
             distroReleases.forEach(async ({ distro, release }) => {
               this.loadDashboardForRelease(distro, release);
 
-              // Load metadata first, then upstream dashboard with that metadata
+              // Load metadata first, then per-arch dashboards and upstream dashboard
               await this.loadMetadataForRelease(distro, release);
+
+              // Load per-architecture dashboards and queues
+              const key = `${distro}-${release}`;
+              const metadata = this.state.releaseMetadata[key];
+              if (metadata && metadata.architectures) {
+                metadata.architectures.forEach(arch => {
+                  this.loadArchDashboardForRelease(distro, release, arch);
+                  this.loadQueueForArch(distro, release, arch);
+                });
+              }
 
               // Load upstream dashboard if configured, using the metadata we just loaded
               const config = this.state.distroConfigs?.[distro];
-              const key = `${distro}-${release}`;
-              const metadata = this.state.releaseMetadata[key];
               if (config && metadata) {
                 this.loadUpstreamDashboardForRelease(distro, release, config, metadata);
               }
@@ -411,8 +546,8 @@ class App extends React.Component {
 
       if (release) {
         // Distribution with releases (e.g., Debian)
-        componentsUrl = `/api/v1/meta/distributions/${encodeURIComponent(distribution)}/${encodeURIComponent(release)}/components`;
-        architecturesUrl = `/api/v1/meta/distributions/${encodeURIComponent(distribution)}/${encodeURIComponent(release)}/architectures`;
+        componentsUrl = `/api/v1/meta/distributions/${encodeURIComponent(distribution)}/releases/${encodeURIComponent(release)}/components`;
+        architecturesUrl = `/api/v1/meta/distributions/${encodeURIComponent(distribution)}/releases/${encodeURIComponent(release)}/architectures`;
       } else {
         // Rolling distribution without releases (e.g., Arch Linux)
         componentsUrl = `/api/v1/meta/distributions/${encodeURIComponent(distribution)}/components`;
@@ -466,6 +601,85 @@ class App extends React.Component {
       .catch((error) => {
         console.error(`Failed to load dashboard for ${distribution}/${release}:`, error);
       });
+  }
+
+  loadArchDashboardForRelease(distribution, release, architecture) {
+    const key = `${distribution}-${release}-${architecture}`;
+    const url = `/api/v1/dashboard?distribution=${encodeURIComponent(distribution)}&release=${encodeURIComponent(release)}&architecture=${encodeURIComponent(architecture)}`;
+
+    fetch(url)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        this.setState((prevState) => ({
+          archDashboards: {
+            ...prevState.archDashboards,
+            [key]: data
+          }
+        }), () => {
+          // After updating archDashboards, aggregate worker jobs
+          this.aggregateWorkerJobs();
+        });
+      })
+      .catch((error) => {
+        console.error(`Failed to load dashboard for ${distribution}/${release}/${architecture}:`, error);
+      });
+  }
+
+  loadQueueForArch(distro, release, arch) {
+    const key = `${distro}-${release}-${arch}`;
+    const base = `/api/v1/queue?distribution=${encodeURIComponent(distro)}&release=${encodeURIComponent(release)}&architecture=${encodeURIComponent(arch)}`;
+
+    Promise.all([
+      fetch(`${base}&started=true`).then(r => r.ok ? r.json() : { total: 0, records: [] }),
+      fetch(`${base}&limit=1`).then(r => r.ok ? r.json() : { total: 0, records: [] })
+    ]).then(([inProgressData, allData]) => {
+      const inProgress = inProgressData.records || [];
+      const pending = Math.max(0, (allData.total || 0) - (inProgressData.total || 0));
+      this.setState(prevState => ({
+        archQueues: { ...prevState.archQueues, [key]: { inProgress, pending } }
+      }), () => {
+        this.aggregateWorkerJobs();
+      });
+    }).catch(err => {
+      console.error(`Failed to load queue for ${distro}/${release}/${arch}:`, err);
+    });
+  }
+
+  aggregateWorkerJobs() {
+    // Aggregate job stats across all distributions for each architecture
+    const { archDashboards, archQueues } = this.state;
+    const workerJobs = {};
+
+    const normalizeArch = (arch) => {
+      if (arch === 'x86_64' || arch === 'all') return 'amd64';
+      return arch;
+    };
+
+    // Use queue inProgress for running count — more accurate than dashboard API
+    Object.entries(archQueues).forEach(([key, data]) => {
+      const parts = key.split('-');
+      const arch = normalizeArch(parts[parts.length - 1]);
+      if (!workerJobs[arch]) workerJobs[arch] = { running: 0, available: 0, pending: 0 };
+      workerJobs[arch].running += (data.inProgress || []).length;
+    });
+
+    // Use dashboard API for available and pending counts
+    Object.entries(archDashboards).forEach(([key, data]) => {
+      const parts = key.split('-');
+      const arch = normalizeArch(parts[parts.length - 1]);
+      if (data && data.jobs) {
+        if (!workerJobs[arch]) workerJobs[arch] = { running: 0, available: 0, pending: 0 };
+        workerJobs[arch].available += data.jobs.available || 0;
+        workerJobs[arch].pending += data.jobs.pending || 0;
+      }
+    });
+
+    this.setState({ workerJobs });
   }
 
   async loadUpstreamDashboardForRelease(distribution, release, config, metadata) {
@@ -569,25 +783,41 @@ class App extends React.Component {
   }
 
   loadPkgs() {
-    const { selectedDistro, selectedRelease } = this.state;
+    const { selectedDistro, selectedRelease, selectedArch } = this.state;
 
     // Get the architectures and components for this release from metadata
     const key = `${selectedDistro}-${selectedRelease}`;
     const metadata = this.state.releaseMetadata[key];
 
+    const architectures = metadata.architectures.filter(a => a === selectedArch);
+
     // Create empty suite structures for each component-architecture combination
     // Packages will be loaded on-demand by the Section component when filters are applied
     const suites = [];
-    metadata.components.forEach(component => {
-      metadata.architectures.forEach(arch => {
+
+    if (metadata.components && metadata.components.length > 0) {
+      // Has components: create suite for each component-architecture combination
+      metadata.components.forEach(component => {
+        architectures.forEach(arch => {
+          suites.push({
+            name: component,
+            architecture: arch,
+            key: `${component}-${arch}`,
+            pkgs: []
+          });
+        });
+      });
+    } else {
+      // No components (e.g., FreeBSD): create suite for each architecture only
+      architectures.forEach(arch => {
         suites.push({
-          name: component,
+          name: null,
           architecture: arch,
-          key: `${component}-${arch}`,
+          key: `none-${arch}`,
           pkgs: []
         });
       });
-    });
+    }
 
     this.setState({ suites, loadingPackages: false });
   }

@@ -1,0 +1,41 @@
+{
+  "distro": "freebsd",
+  "upstream": null,
+  "branding": {
+    "name": "FreeBSD",
+    "poweredBy": "assets/debian/powered_by_debian.png"
+  },
+  "styling": {
+    "logo": "assets/freebsd/FREEBSD_Logo_Horiz_Pos_RGB.png",
+    "backgroundImage": "assets/freebsd/Bsd_Wallpaper.jpg",
+    "colors": {
+      "navbarBorder": "#EB0028",
+      "navbarBackground": "#333"
+    }
+  },
+  "content": {
+    "packageUrlTemplate": "https://ports.freebsd.org/cgi/ports.cgi?query={name}&stype=all&sektion=all"
+  },
+  "navbar": {
+    "menuItems": [
+      {
+        "id": "fbsd-home",
+        "text": "Home",
+        "url": "https://www.freebsd.org/",
+        "title": "FreeBSD News"
+      },
+      {
+        "id": "fbsd-ports",
+        "text": "Ports",
+        "url": "https://ports.freebsd.org",
+        "title": "freeBSD Ports"
+      },
+      {
+        "id": "fbsd-git",
+        "text": "Git",
+        "url": "https://cgit.freebsd.org/",
+        "title": "FreeBSD Git Repositories"
+      }
+    ]
+  }
+}

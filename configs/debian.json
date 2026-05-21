@@ -2,6 +2,7 @@
   "distro": "debian",
   "upstream": {
     "url": "https://reproduce.debian.net/",
+    "urlTemplate": "https://reproduce.debian.net/{release}.html",
     "apiUrl": "/upstream/debian/dashboard"
   },
   "branding": {

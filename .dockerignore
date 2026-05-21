@@ -1,8 +1,12 @@
 build.sh
 node_modules/
+dist/
+public/config.json
 .env
 dev-server.js
 docker-compose.yml
 LICENSE
 README.md
 .git/
+.vite/
+yarn.lock

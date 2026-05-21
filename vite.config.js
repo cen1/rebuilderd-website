@@ -2,25 +2,29 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
+import http from 'http';
 
-// Load configuration from .env file
+// Load configuration: process.env takes priority over .env file
 let authToken = '';
 let apiBaseUrl = 'http://localhost:8484';
 
 try {
-  const envFile = fs.readFileSync(path.join(process.cwd(), '.env'), 'utf8');
-  const authMatch = envFile.match(/REACT_APP_AUTH_TOKEN=(.+)/);
-  const urlMatch = envFile.match(/REACT_APP_API_BASE_URL=(.+)/);
+  const envPath = path.join(process.cwd(), '.env');
+  const envFile = fs.readFileSync(envPath, 'utf8');
+  const authMatch = envFile.match(/^REACT_APP_AUTH_TOKEN=(.+)$/m);
+  const urlMatch = envFile.match(/^REACT_APP_API_BASE_URL=(.+)$/m);
 
-  if (authMatch) {
-    authToken = authMatch[1].trim();
-  }
-  if (urlMatch) {
-    apiBaseUrl = urlMatch[1].trim();
-  }
+  if (authMatch) authToken = authMatch[1].trim();
+  if (urlMatch) apiBaseUrl = urlMatch[1].trim();
 } catch (err) {
-  console.log('Using default API configuration');
+  console.log('No .env file found, using defaults');
 }
+
+// Environment variables override .env file
+if (process.env.REACT_APP_AUTH_TOKEN) authToken = process.env.REACT_APP_AUTH_TOKEN;
+if (process.env.REACT_APP_API_BASE_URL) apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
+
+console.log('Using API base URL:', apiBaseUrl);
 
 export default defineConfig({
   plugins: [react()],
@@ -37,6 +41,10 @@ export default defineConfig({
       '/api': {
         target: apiBaseUrl,
         changeOrigin: true,
+        agent: new http.Agent({
+          family: 4, // Force IPv4
+          keepAlive: true
+        }),
         configure: (proxy, options) => {
           if (authToken) {
             proxy.on('proxyReq', (proxyReq) => {

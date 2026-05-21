@@ -138,8 +138,9 @@ body {
 
 		/* bulma has no 4k option */
 		@media (min-width: 2000px) {
-			columns: 8;
+			columns: 7;
 		}
+
 	}
 }
 
@@ -204,6 +205,16 @@ body {
 	-moz-user-select: none; /* Old versions of Firefox */
 	-ms-user-select: none; /* Internet Explorer/Edge */
 	user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}
+
+@keyframes clock-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+.clock-pulse {
+  display: inline-block;
+  animation: clock-pulse 2s ease-in-out infinite;
 }
 
 // Footer link styling

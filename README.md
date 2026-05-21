@@ -13,17 +13,17 @@ A universal status dashboard that displays reproducibility stats for all distrib
 
 ## Dependencies
 
-* node 20
-* yarn
+* node 24
+* pnpm
 
 ## Development
 
 Copy `.env.example` to `.env` and point it to your rebuilderd instance.
 
 ```bash
-yarn install
-yarn run build
-yarn run dev
+pnpm install
+pnpm run build
+pnpm run dev
 ```
 
 Open http://localhost:3000
