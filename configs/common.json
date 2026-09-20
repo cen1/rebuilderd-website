@@ -3,6 +3,18 @@
   "navbar": {
     "menuItems": [
       {
+        "id": "demo",
+        "url": "/demo.html",
+        "title": "repro-threshold Demo",
+        "text": "repro-threshold Demo"
+      },
+      {
+        "id": "openapi",
+        "url": "/api/v1/api-docs",
+        "title": "OpenAPI Specification",
+        "text": "OpenAPI Spec"
+      },
+      {
         "id": "blog",
         "url": "https://xpam.pl",
         "title": "Visit xpam.pl blog",

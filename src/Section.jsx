@@ -91,7 +91,7 @@ function PeerResults({ pkg, distro, inlineLinks, showDisagreements }) {
 }
 
 function PackageList(props) {
-  const { pkgs, config, distro, showDisagreements } = props;
+  const { pkgs, config, distro, release, showDisagreements } = props;
 
   const getStatusClass = (status) => {
     if (!status) return '';
@@ -108,7 +108,9 @@ function PackageList(props) {
     <ul>
     {pkgs.map(function(pkg) {
       const urlTemplate = config?.content?.packageUrlTemplate || 'https://www.archlinux.org/packages/{component}/{architecture}/{name}';
+      const mappedRelease = (distro === 'debian' && release === 'sid') ? 'unstable' : release;
       const url = urlTemplate
+        .replace('{release}', mappedRelease)
         .replace('{suite}', pkg.component)
         .replace('{component}', pkg.component)
         .replace('{architecture}', pkg.architecture)
@@ -640,7 +642,7 @@ class Section extends React.Component {
             )}
 
             {pkgs.length > 0 && (
-              <PackageList pkgs={pkgs} config={config} distro={this.props.distro} showDisagreements={showDisagreements} />
+              <PackageList pkgs={pkgs} config={config} distro={this.props.distro} release={this.props.release} showDisagreements={showDisagreements} />
             )}
 
             {pkgs.length === 0 && !loading && (

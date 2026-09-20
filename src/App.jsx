@@ -242,7 +242,7 @@ class App extends React.Component {
 
                                       return (
                                         <div style={{ fontSize: '0.65rem', fontWeight: 'normal', marginTop: '0.5rem', lineHeight: '1.3' }}>
-                                          Upstream rebuilder claims{' '}
+                                          {new URL(config.upstream.url).hostname} rebuilder claims{' '}
                                           <a
                                             href={upstreamUrl}
                                             target="_blank"

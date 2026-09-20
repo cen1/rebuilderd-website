@@ -18,7 +18,7 @@
     }
   },
   "content": {
-    "packageUrlTemplate": "https://packages.debian.org/search?keywords={name}"
+    "packageUrlTemplate": "https://tracker.debian.org/pkg/{name}"
   },
   "navbar": {
     "menuItems": [

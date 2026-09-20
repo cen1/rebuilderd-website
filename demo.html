@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>repro-threshold Demo — xpam.pl rebuilder</title>
+  <link rel="shortcut icon" href="/public/favicon.ico"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/asciinema-player@3/dist/bundle/asciinema-player.min.js"></script>
+  <style>
+    body {
+      font-family: BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+    }
+    #archnavbar {
+      background-color: #333;
+      border-bottom: 4px solid #0088cc;
+      min-height: 40px;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #archnavbar h1 { color: white; font-size: large; font-weight: bold; }
+    #archnavbarmenu { margin-right: 20px; }
+    #archnavbarlist { list-style: none; margin: 0; padding: 0; display: flex; }
+    #archnavbarlist li { margin: 0; padding: 0; }
+    #archnavbarlist a {
+      color: #999;
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 22px 15px;
+      text-decoration: none;
+    }
+    #archnavbarlist a:hover { color: #fff; }
+    #archnavbarlist li.active a { color: #fff; }
+    .hero.is-primary { background-color: #f6f9fc; }
+    .hero.is-primary .hero-body { background-color: #fff; }
+    .hero.is-primary .title { color: #363636; font-size: 2rem; font-weight: 600; }
+    .hero.is-primary a { color: #0088cc; text-decoration: underline; }
+    .footer a { color: #0088cc; text-decoration: underline; }
+    pre code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+  </style>
+</head>
+<body>
+
+<div id="archnavbar">
+  <div id="logo"><h1><a href="/" style="color:white;text-decoration:none;">xpam.pl rebuilder</a></h1></div>
+  <div id="archnavbarmenu">
+    <ul id="archnavbarlist">
+      <li class="active"><a href="/demo.html" title="repro-threshold Demo">repro-threshold Demo</a></li>
+      <li><a href="/api/v1/api-docs" title="OpenAPI Specification">OpenAPI Spec</a></li>
+      <li><a href="https://xpam.pl" title="Visit xpam.pl blog">Blog</a></li>
+    </ul>
+  </div>
+</div>
+
+<section class="hero is-primary">
+  <div class="hero-body">
+    <div class="container">
+      <h1 class="title">repro-threshold Demo</h1>
+      <p>
+        So you run a rebuilderd instance but why is this useful? This page demonstrates
+        one use case of using <a href="https://github.com/kpcyrd/repro-threshold">repro-threshold</a> apt transport method
+        which requires N/M independent rebuilderd instances to agree on reproducibility in order to successfully install a package.
+        This way you can ensure your installed packages are reproducible with high likelihood.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <div class="content">
+      <div id="demo-player" style="margin-bottom:2.5rem;"></div>
+        <h2 class="title is-4">What it does</h2>
+      <p>
+        The example Dockerfile below configures <code>reproduced+https://</code> as the apt transport for
+        <code>debian:unstable</code>. Every package download is intercepted by repro-threshold,
+        which queries two independent rebuilders for a signed attestation before allowing
+        installation to proceed.
+      </p>
+      <p>Threshold: <strong>2/2</strong> — both rebuilders must confirm the package.</p>
+      <ul>
+        <li>
+          <strong>rebuilderd.xpam.pl</strong> — this instance
+          (<a href="https://rebuilderd.xpam.pl:2096/api/v1/meta/public-keys">signing key</a>)
+        </li>
+        <li>
+          <strong>reproduce.debian.net</strong> (<a href="https://reproduce.debian.net/amd64/api/v1/meta/public-keys">signing key</a>)
+        </li>
+      </ul>
+      <p>For simplicity, this demo fetches signing keys at build time from each rebuilder's <code>/api/v1/meta/public-keys</code> endpoint.</p>
+      <p>Ideally in real world, we'd be using something like 3/5 scheme if we had enough Debian Unstable rebuilders.</p>
+
+      <h3 class="title is-5">Demo installs</h3>
+      <ul>
+        <li>
+          <strong>openjdk-8-jre-headless</strong> — not confirmed by rebuilders →
+          <span style="color:#ff3860;font-weight:bold;">blocked</span>
+        </li>
+        <li>
+          <strong>bsdiff</strong> — confirmed by both rebuilders →
+          <span style="color:#23d160;font-weight:bold;">success</span>
+        </li>
+      </ul>
+
+      <p>It is important to note that install will only succeed if all package dependencies are also reproducible.</p>
+      <p>This demo might stop working at any point if bsdiff or openjdk-8-jre-headless change their reproducibility status.</p>
+
+      <h2 class="title is-4">Usage</h2>
+      <pre><code class="language-bash">docker build -t repro-threshold-demo .
+docker run --rm repro-threshold-demo</code></pre>
+
+      <h2 class="title is-4" style="margin-top:2rem;">Dockerfile</h2>
+    </div>
+
+    <pre><code id="dockerfile-code" class="language-dockerfile">__DOCKERFILE_CONTENT__</code></pre>
+
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="content has-text-centered">
+    <p>
+      Source on <a href="https://github.com/cen1/rebuilderd-website">GitHub</a>.
+      License is <a href="http://opensource.org/licenses/mit-license.php">MIT</a>.
+    </p>
+  </div>
+</footer>
+
+<script>
+  hljs.highlightElement(document.getElementById('dockerfile-code'));
+  AsciinemaPlayer.create('/demo/demo.cast', document.getElementById('demo-player'), {
+    cols: 120,
+    rows: 30,
+    autoPlay: true,
+    startAt: 0,
+    speed: 0.85,
+    theme: 'asciinema',
+    terminalFontSize: 'small',
+    fit: false
+  });
+</script>
+
+</body>
+</html>

@@ -26,12 +26,30 @@ if (process.env.REACT_APP_API_BASE_URL) apiBaseUrl = process.env.REACT_APP_API_B
 
 console.log('Using API base URL:', apiBaseUrl);
 
+function injectDockerfile() {
+  const dockerfilePath = path.join(process.cwd(), 'demo/Dockerfile');
+  return {
+    name: 'inject-dockerfile',
+    transformIndexHtml(html, ctx) {
+      if (!ctx.filename.endsWith('demo.html')) return html;
+      const content = fs.readFileSync(dockerfilePath, 'utf-8');
+      const escaped = content
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      return html.replace('__DOCKERFILE_CONTENT__', escaped);
+    }
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), injectDockerfile()],
   css: {
     preprocessorOptions: {
       scss: {
-        api: 'modern-compiler'
+        api: 'modern-compiler',
+        quietDeps: true,
+        silenceDeprecations: ['if-function']
       }
     }
   },
@@ -75,6 +93,12 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        demo: 'demo.html',
+      }
+    }
   }
 });
